@@ -11,7 +11,11 @@
         <PackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="8.0.0-rc.1.23421.29" />
         <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="8.0.0-rc.1.23421.29" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0"/>
+
+
     </ItemGroup>
+
+
 
 
 </Project>

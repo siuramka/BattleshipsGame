@@ -641,6 +641,8 @@ fabric.properties
 ### VisualStudioCode ###
 !.vscode/*.code-snippets
 
+.idea
+
 # Local History for Visual Studio Code
 
 # Built Visual Studio Code Extensions
