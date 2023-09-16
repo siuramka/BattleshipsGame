@@ -1,6 +1,22 @@
 import React, { useEffect, useState } from "react";
 import "./App.css";
 import * as signalR from "@microsoft/signalr";
+import { IGameBoard } from "./enities/IGameBoard";
+
+const exampleGameBoardGrid: IGameBoard = {
+  Grid: [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+    [0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [0, 0, 0, 0, 1, 1, 1, 1, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  ],
+};
 
 const App: React.FC = () => {
   const [clientMessage, setClientMessage] = useState<string | null>(null);
@@ -21,6 +37,14 @@ const App: React.FC = () => {
     hubConnection.on("WaitingForOpponent", (playerName: string) => {
       setClientMessage(`Hello ${playerName}, waiting for opponent...`);
     });
+
+    hubConnection.on("SetupShips", () => {
+      console.log("sending ships")
+      hubConnection.invoke("SetShipsOnBoard", exampleGameBoardGrid).catch((err) => {
+        console.log("setships" + err)
+      })
+    });
+
 
     return () => {
       // Clean up the connection when the component unmounts
