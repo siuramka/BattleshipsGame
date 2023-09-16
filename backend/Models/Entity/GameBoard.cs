@@ -1,100 +1,32 @@
-﻿namespace backend.Models.Entity;
+﻿using backend.Models.Entity.Ships;
+
+namespace backend.Models.Entity;
 
 //Would be better to write a separate class for the grid
 public class GameBoard
 {
-    public int[][] Grid { get; private set; }
-    public int Size { get; private set; }
-    public int ShipsRemaining { get; private set; }
-
-    public GameBoard(int size = 10)
+    private List<Ship> _battleships = new();
+    private List<ShipCoordinate> _missedCoordinates = new(); 
+    public void AddShip(Ship ship)
     {
-        Size = size;
-        Grid = new int[size][];
-        ShipsRemaining = 0; // Initialize with zero ships, you can add ships later.
+        var shipPosition = ship.Coordinates;
+        //todo: could check overlap coordinates prob
+        _battleships.Add(ship);
     }
-
-    public void Initialize()
+    
+    public bool HitCoordinate(int x, int y)
     {
-        // Initialize the grid with empty cells (0)
-        for (int row = 0; row < Size; row++)
+        foreach (var battleship in _battleships)
         {
-            for (int col = 0; col < Size; col++)
+            if (!battleship.IsCoordinateHit(x, y))
             {
-                Grid[row][col] = 0;
+                battleship.HitCoordinate(x, y);
+                return true;
             }
         }
-    }
-
-    /// <summary>
-    /// ships are just 1x1 for now
-    /// </summary>
-    public void AddRandomShipTest()
-    {
-        Grid[5][5] = 1;
-        Grid[5][3] = 1;
-        Grid[5][1] = 1;
-
-
-        Grid[1][2] = 1;
-        Grid[3][4] = 1;
-
-        ShipsRemaining += 5;
-    }
-
-    public bool CanHit(int x, int y)
-    {
-        if (Grid[x][y] == 1)
-        {
-            return true;
-        }
-
+        _missedCoordinates.Add(new ShipCoordinate(x,y));
         return false;
     }
-
-    // 1 = mark as checked
-    // 2 = mark as ship hit
-    // 0 = empty
-    public bool MarkCell(int x, int y)
-    {
-        if (x < 0 || x >= Size || y < 0 || y >= Size)
-        {
-            // Coordinates out of bounds
-            return false;
-        }
-
-        if (Grid[x][y] == 1)
-        {
-            Grid[x][y] = 2; // mark ship hit 1x1
-            ShipsRemaining--;
-            return true;
-        }
-
-        //assume cant hit on already hit targerds in frontend
-        Grid[x][y] = 1;
-
-        return true;
-    }
-
-    public bool IsGameOver()
-    {
-        return ShipsRemaining == 0;
-    }
-
-    public GameBoard Clone()
-    {
-        var clonedBoard = new GameBoard(Size);
-        clonedBoard.ShipsRemaining = ShipsRemaining;
-
-        // Copy the grid contents
-        for (int row = 0; row < Size; row++)
-        {
-            for (int col = 0; col < Size; col++)
-            {
-                clonedBoard.Grid[row][col] = Grid[row][col];
-            }
-        }
-
-        return clonedBoard;
-    }
+    
+    //gameover check if all sunk
 }

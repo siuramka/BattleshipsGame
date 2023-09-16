@@ -1,22 +1,31 @@
 import React, { useEffect, useState } from "react";
 import "./App.css";
 import * as signalR from "@microsoft/signalr";
-import { IGameBoard } from "./enities/IGameBoard";
+import { Ship } from "./enities/Ship";
 
-const exampleGameBoardGrid: IGameBoard = {
-  Grid: [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-    [0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [0, 0, 0, 0, 1, 1, 1, 1, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+const ship: Ship = {
+  Coordinates: [
+      { X: 3, Y: 5 },
+      { X: 3, Y: 6 },
+      { X: 3, Y: 7 },
+      { X: 3, Y: 8 },
   ],
 };
+const ship1: Ship = {
+  Coordinates: [
+      { X: 5, Y: 5 },
+      { X: 5, Y: 6 },
+      { X: 5, Y: 7 },
+  ],
+};
+const ship2: Ship = {
+  Coordinates: [
+      { X: 1, Y: 5 },
+      { X: 1, Y: 6 },
+  ],
+};
+
+const ships: Array<Ship> = [ship, ship1, ship2];
 
 const App: React.FC = () => {
   const [clientMessage, setClientMessage] = useState<string | null>(null);
@@ -34,13 +43,17 @@ const App: React.FC = () => {
     });
 
     // Listen for the "WaitingForOpponent" event
+    hubConnection.on("GameStarted", () => {
+      setClientMessage(`Game Started!`);
+    });
+
     hubConnection.on("WaitingForOpponent", (playerName: string) => {
       setClientMessage(`Hello ${playerName}, waiting for opponent...`);
     });
 
     hubConnection.on("SetupShips", () => {
       console.log("sending ships")
-      hubConnection.invoke("SetShipsOnBoard", exampleGameBoardGrid).catch((err) => {
+      hubConnection.invoke("SetShipsOnBoard", ships).catch((err) => {
         console.log("setships" + err)
       })
     });

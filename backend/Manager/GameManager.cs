@@ -31,5 +31,24 @@ public class GameManager
         return _games.Any(x => x.WaitingForOpponent == true);
     }
 
+    public Player? GetPlayer(string playerId)
+    {
+        return _games.Select(game => game.GetPlayerById(playerId)).FirstOrDefault(currentPlayer => currentPlayer != null);
+    }
+
+    public Game? GetPlayerGame(string playerId)
+    {
+        foreach (var game in _games)
+        {
+            if (game.GetPlayerById(playerId) != null)
+            {
+                return game;
+            }
+        }
+
+        return null;
+
+    }
+
     // Add methods to manage games, players, and game state
 }

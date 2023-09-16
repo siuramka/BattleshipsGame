@@ -1,20 +1,26 @@
 ﻿using backend.Manager;
-using backend.Models.Dtos;
 using backend.Models.Entity;
+using backend.Models.Entity.Ships;
+using backend.Service;
 using Microsoft.AspNetCore.SignalR;
-
 namespace backend.Hubs;
+
+//todo: add disconnect logic
 
 public class GameHub : Hub
 {
-    private GameManager _gameManager = GameManager.Instance; // on refresh creates a new connection so new game each time
-    //can use signalr clients.groups so dont have to foreach the players all the time probably
-    //add disconnect logic later
+    private GameManager _gameManager = GameManager.Instance; //singleton because each new connection creates new hub instance
+    private GameService _gameService;
+    
+    public GameHub() : base()
+    {
+        _gameService = new();
+    }
     public async Task JoinGame()
     {
         var playerName = _gameManager.EmptyGameExist() ? "Player2" : "Player1"; // Player1 if hes the first to join the game
         var player = new Player { Id = Context.ConnectionId, Name = playerName };
-
+        
         if (!_gameManager.EmptyGameExist()) // if no empty games
         {
             var game = new Game();
@@ -33,7 +39,6 @@ public class GameHub : Hub
             await Groups.AddToGroupAsync(game.Player2.Id, game.Group.Id);
             await Clients.Client(player.Id).SendAsync("WaitingForOpponent", player.Name);
             await SetupShips(game.Group.Id);
-            // StartGame(game.Id);
         }
     }
 
@@ -42,40 +47,54 @@ public class GameHub : Hub
         await Clients.Group(gameId).SendAsync("SetupShips"); //send to frontend for players to setup ships
     }
 
-    public async Task SetShipsOnBoard(GameBoardSetupDto board)
+    public async Task SetShipsOnBoard(List<Ship> ships)
     {
-        // set ships
-        int x = 0;
-        //StartGame();
+        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
+        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
+        
+        if (currentPlayer == null || currentGame == null) return;
+        
+        _gameService.SetupPlayerShips(currentPlayer, ships);
+        currentPlayer.HasSetupShips = true;
+
+        if (currentGame.HavePlayersSetupShips())
+        {
+            await StartGame(currentGame.Group.Id);
+        }
     }
-    
-    private void StartGame(string gameId)
+
+    private async Task StartGame(string gameId)
     {
-        var game = _gameManager.Games.Where(x => x.Group.Id == gameId).First();
-        var gamePlayers = game.GetPlayers();
-        
-        foreach (var player in gamePlayers)
-        {
-            var gameBoard = player.OwnBoard;
-            gameBoard.Initialize(); // Initialize the player's game board with 0's
-            gameBoard.AddRandomShipTest(); // and some ships for testing all 1x1
-            
-            var enemyBoard = player.EnemyBoard;
-            enemyBoard.Initialize(); // Initialize the player's opponent boards with 0's
-        }
-        
-        foreach (var player in gamePlayers)
-        {
-            var opponent = gamePlayers.First(p => p.Id != player.Id);
-            var opponentGameBoard = opponent.EnemyBoard; //enemy board aka board where you make hits
-            
-            Clients.Client(player.Id).SendAsync("OpponentName", opponent.Name);
-            Clients.Client(player.Id).SendAsync("OpponentGameBoard", opponentGameBoard);
-        }
-    
-        Clients.Client(game.Player1.Id).SendAsync("YourTurn");
+        await Clients.Group(gameId).SendAsync("GameStarted"); // for testing, 
+
     }
-    
+    // private void StartGame(string gameId)
+    // {
+    //     var game = _gameManager.Games.Where(x => x.Group.Id == gameId).First();
+    //     var gamePlayers = game.GetPlayers();
+    //     
+    //     foreach (var player in gamePlayers)
+    //     {
+    //         var gameBoard = player.OwnBoard;
+    //         gameBoard.Initialize(); // Initialize the player's game board with 0's
+    //         gameBoard.AddRandomShipTest(); // and some ships for testing all 1x1
+    //         
+    //         var enemyBoard = player.EnemyBoard;
+    //         enemyBoard.Initialize(); // Initialize the player's opponent boards with 0's
+    //     }
+    //     
+    //     foreach (var player in gamePlayers)
+    //     {
+    //         var opponent = gamePlayers.First(p => p.Id != player.Id);
+    //         var opponentGameBoard = opponent.EnemyBoard; //enemy board aka board where you make hits
+    //         
+    //         Clients.Client(player.Id).SendAsync("OpponentName", opponent.Name);
+    //         Clients.Client(player.Id).SendAsync("OpponentGameBoard", opponentGameBoard);
+    //     }
+    //
+    //     Clients.Client(game.Player1.Id).SendAsync("YourTurn");
+    // }
+    //
     // public async Task MakeMove(int x, int y)
     // {
     //     var currentGame = _games.Where(x => x.GetPlayers().Any(x => x.Id == Context.ConnectionId)).First();
