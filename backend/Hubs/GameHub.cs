@@ -1,4 +1,5 @@
 ﻿using backend.Manager;
+using backend.Models.Dtos;
 using backend.Models.Entity;
 using Microsoft.AspNetCore.SignalR;
 
@@ -8,6 +9,7 @@ public class GameHub : Hub
 {
     private GameManager _gameManager = GameManager.Instance; // on refresh creates a new connection so new game each time
     //can use signalr clients.groups so dont have to foreach the players all the time probably
+    //add disconnect logic later
     public async Task JoinGame()
     {
         var playerName = _gameManager.EmptyGameExist() ? "Player2" : "Player1"; // Player1 if hes the first to join the game
@@ -40,14 +42,13 @@ public class GameHub : Hub
         await Clients.Group(gameId).SendAsync("SetupShips"); //send to frontend for players to setup ships
     }
 
-    public async Task SetShipsOnBoard(GameBoard board)
+    public async Task SetShipsOnBoard(GameBoardSetupDto board)
     {
         // set ships
         int x = 0;
         //StartGame();
     }
     
-
     private void StartGame(string gameId)
     {
         var game = _gameManager.Games.Where(x => x.Group.Id == gameId).First();
