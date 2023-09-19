@@ -1,42 +1,40 @@
+body {
+  font-family: "Libre Baskerville";
+  margin: 0;
+  padding-top: 2em;
+  width: 100vw;
+  height: 100vh;
+  background-color: #14213d;
+  user-select: none;
+}
+
+body * {
+  opacity: 1;
+}
+
+* {
+  box-sizing: border-box;
+  opacity: 1;
+}
+
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  /* justify-content: space-between; */
+  align-items: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.board,
+.logs {
+  background-color: #e5e5e5;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+.heading {
+  color: #ffffff;
+  border-radius: 1em;
+  padding: 0 1.5em;
+  letter-spacing: 0.5em;
+  padding-bottom: 5rem;
 }

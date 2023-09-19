@@ -1,0 +1,15 @@
+h1,
+h3 {
+  font-family: "Fjalla One";
+  text-transform: uppercase;
+}
+
+.display {
+  display: flex;
+  width: 100%;
+  justify-content: space-around;
+}
+
+.display > div {
+  max-width: 50%;
+}

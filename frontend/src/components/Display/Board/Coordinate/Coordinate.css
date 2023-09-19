@@ -1,0 +1,84 @@
+.coordinate-space {
+  width: 1.2em;
+  height: 1.2em;
+}
+
+.row-column-label {
+  color: #14213d;
+}
+
+.row-column {
+  display: flex;
+}
+
+.column-label {
+  align-items: flex-end;
+}
+
+.coordinate-label-column {
+  width: 2.5375em;
+  height: 1.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8em;
+}
+
+.coordinate-label-row {
+  width: 1.5em;
+  height: 2.5375em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8em;
+}
+
+.coordinate {
+  border: 0.15em solid #ffffff;
+}
+
+.coordinate > .row > .square:first-child {
+  border-left: none;
+}
+
+.coordinate > .row:first-child > .square {
+  border-top: none;
+}
+
+.square {
+  width: 2em;
+  height: 2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 0.15em solid #ffffff;
+  border-left: 0.15em solid #ffffff;
+}
+
+.row {
+  display: flex;
+}
+
+.carrier {
+  background-color: #264653;
+  color: #fff;
+}
+
+.battleship {
+  background-color: #2a9d8f;
+  color: #fff;
+}
+
+.cruiser {
+  background-color: #e9c46a;
+}
+
+.submarine {
+  background-color: #f4a261;
+  color: #fff;
+}
+
+.destroyer {
+  background-color: #e76f51;
+  color: #fff;
+}

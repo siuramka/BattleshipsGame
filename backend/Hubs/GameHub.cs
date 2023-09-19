@@ -7,6 +7,8 @@ namespace backend.Hubs;
 
 //todo: add disconnect logic
 
+
+
 public class GameHub : Hub
 {
     private GameManager _gameManager = GameManager.Instance; //singleton because each new connection creates new hub instance
@@ -15,6 +17,12 @@ public class GameHub : Hub
     public GameHub() : base()
     {
         _gameService = new();
+    }
+
+    private class HitObject {
+        public int Row { get; set; }
+        public int Column { get; set; }
+        public bool IsHit { get; set; }
     }
     public async Task JoinGame()
     {
@@ -67,6 +75,19 @@ public class GameHub : Hub
     {
         await Clients.Group(gameId).SendAsync("GameStarted"); // for testing, 
 
+    }
+
+    public async Task MakeMove(int x, int y)
+    {
+        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
+        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
+
+        
+        var hitObject = new HitObject();
+        hitObject.Row = y;
+        hitObject.Column = x;
+        hitObject.IsHit = true;
+        await Clients.Client(currentPlayer.Id).SendAsync("ReturnMove", hitObject);
     }
     // private void StartGame(string gameId)
     // {
