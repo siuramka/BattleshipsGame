@@ -7,6 +7,13 @@ public class GameBoard
 {
     private List<Ship> _battleships = new();
     private List<ShipCoordinate> _missedCoordinates = new(); 
+    public bool HaveAllShipsSunk
+    {
+        get
+        {
+            return _battleships.All(x => x.IsSunk());
+        }
+    }
     public void AddShip(Ship ship)
     {
         var shipPosition = ship.Coordinates;
@@ -27,6 +34,5 @@ public class GameBoard
         _missedCoordinates.Add(new ShipCoordinate(x,y));
         return false;
     }
-    
-    //gameover check if all sunk
+
 }

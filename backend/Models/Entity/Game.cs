@@ -18,4 +18,19 @@ public class Game
     {
         return Player1.HasSetupShips && Player2.HasSetupShips;
     }
+
+    public void RemovePlayerFromGame(Player player)
+    {
+        if (Player1 == player)
+        {
+            Player1 = null;
+            return;
+        }
+        Player2 = null;
+    }
+
+    public Player GetEnemyPlayer(Player player)
+    {
+        return Player1 == player ? Player2 : Player1;
+    }
 }

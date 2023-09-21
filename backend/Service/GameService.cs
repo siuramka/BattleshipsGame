@@ -14,4 +14,9 @@ public class GameService
         }
 
     }
+
+    public void RemovePlayerFromGame(Player player, Game game)
+    {
+        
+    }
 }

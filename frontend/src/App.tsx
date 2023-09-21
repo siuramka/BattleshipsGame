@@ -11,6 +11,7 @@ const ship: Ship = {
       { X: 3, Y: 8 },
   ],
 };
+
 const ship1: Ship = {
   Coordinates: [
       { X: 5, Y: 5 },
@@ -18,6 +19,7 @@ const ship1: Ship = {
       { X: 5, Y: 7 },
   ],
 };
+
 const ship2: Ship = {
   Coordinates: [
       { X: 1, Y: 5 },
