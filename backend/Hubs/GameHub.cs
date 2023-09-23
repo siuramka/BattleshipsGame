@@ -118,10 +118,6 @@ public class GameHub : Hub
     
     public async Task MakeMove(int x, int y)
     {
-        var _currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
-        var _currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
-
-
         var hitObject = new HitObject();
         hitObject.Row = y;
         hitObject.Column = x;
