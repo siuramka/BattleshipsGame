@@ -18,10 +18,10 @@ public class Ship
     {
         foreach (var coordinate in Coordinates)
         {
-            if (coordinate.X == x && coordinate.Y == y && !coordinate.IsHit)
+            if (coordinate.X == x && coordinate.Y == y)
             {
                 coordinate.Hit();
-                break;
+                return;
             }
         }
     }

@@ -13,7 +13,13 @@ public class GameBoard
         //todo: could check overlap coordinates prob
         _battleships.Add(ship);
     }
-    
+    public bool HaveAllShipsSunk
+    {
+        get
+        {
+            return _battleships.All(x => x.IsSunk());
+        }
+    }
     public bool HitCoordinate(int x, int y)
     {
         foreach (var battleship in _battleships)
