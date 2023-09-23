@@ -33,6 +33,11 @@ public class GameBoard
         _missedCoordinates.Add(new ShipCoordinate(x,y));
         return false;
     }
+
+    public List<Ship> GetShips()
+    {
+        return new List<Ship>(_battleships);
+    }
     
     //gameover check if all sunk
 }

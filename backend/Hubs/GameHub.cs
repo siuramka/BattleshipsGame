@@ -14,10 +14,13 @@ public class GameHub : Hub
         _gameManager = GameManager.Instance; //singleton because each new connection creates new hub instance
 
     private GameService _gameService;
-
+    private Player _currentPlayer = null;
+    private Game _currentGame = null;
     public GameHub() : base()
     {
         _gameService = new();
+        _currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
+        _currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
     }
 
     private class HitObject
@@ -29,10 +32,10 @@ public class GameHub : Hub
 
     public async Task JoinGame()
     {
-        var playerName =
-            _gameManager.EmptyGameExist() ? "Player2" : "Player1"; // Player1 if hes the first to join the game
+        var playerName =_gameManager.EmptyGameExist() ? "Player2" : "Player1"; // Player1 if hes the first to join the game
         var player = new Player { Id = Context.ConnectionId, Name = playerName };
-        var game = new Game();
+        Game game = new Game();
+        
         if (!_gameManager.EmptyGameExist()) // if no empty games
         {
             game.Player1 = player;
@@ -47,6 +50,7 @@ public class GameHub : Hub
             x.WaitingForOpponent == true); //get the first game where player is waiting for an opponent
         game.Player2 = player;
         game.WaitingForOpponent = false;
+        
         await Groups.AddToGroupAsync(game.Player1.Id, game.Group.Id);
         await Groups.AddToGroupAsync(game.Player2.Id, game.Group.Id);
         await Clients.Client(player.Id).SendAsync("WaitingForOpponent", player.Name);
@@ -60,43 +64,51 @@ public class GameHub : Hub
 
     public async Task SetShipsOnBoard(List<Ship> ships)
     {
-        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
-        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
+        if (_currentPlayer == null || _currentGame == null) return;
 
-        if (currentPlayer == null || currentGame == null) return;
+        _gameService.SetupPlayerShips(_currentPlayer, ships);
+        _currentPlayer.HasSetupShips = true;
 
-        _gameService.SetupPlayerShips(currentPlayer, ships);
-        currentPlayer.HasSetupShips = true;
-
-        if (currentGame.HavePlayersSetupShips())
+        if (_currentGame.HavePlayersSetupShips())
         {
-            await StartGame(currentGame.Group.Id);
+            await StartGame(_currentGame);
         }
     }
-
-    private async Task StartGame(string gameId)
+    
+    private async Task StartGame(Game _currentGame)
     {
-        await Clients.Group(gameId).SendAsync("GameStarted"); // for testing, 
+        await Clients.Group(_currentGame.Group.Id).SendAsync("GameStarted");
+        await Task.Delay(TimeSpan.FromSeconds(1)); // wait a second
+        await Clients.Client(_currentGame.Player1.Id).SendAsync("YourTurn"); // Player1 starts the game
     }
 
+    public async Task EnterTestMode()
+    {
+        var enemyPlayer = _currentGame.GetEnemyPlayer(_currentPlayer);
+        var enemyShips = enemyPlayer.OwnBoard.GetShips();
+
+        await SendTestModeShips(_currentPlayer, enemyShips);
+    }
+
+    private async Task SendTestModeShips(Player player, List<Ship> ships)
+    {
+        await Clients.Client(player.Id).SendAsync("ReturnEnterTestMode", ships);
+    }
     
     public async Task NewMakeMove(int x, int y)
     {
-        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
-        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
-        
-        var enemyPlayer = currentGame.GetEnemyPlayer(currentPlayer);
+        var enemyPlayer = _currentGame.GetEnemyPlayer(_currentPlayer);
         
         var enemyBoard = enemyPlayer.OwnBoard;
 
         bool hitEnemyShip = enemyBoard.HitCoordinate(x, y);
         
-        await Clients.Client(currentPlayer.Id).SendAsync("ReturnMove", x,y ,hitEnemyShip);//return to attacker if he hit ship or not
+        await Clients.Client(_currentPlayer.Id).SendAsync("ReturnMove", x,y ,hitEnemyShip);//return to attacker if he hit ship or not
         await Clients.Client(enemyPlayer.Id).SendAsync("OpponentResult", x,y,hitEnemyShip);//return to who is getting attacked whenether or not his ship got hit
 
         if (enemyBoard.HaveAllShipsSunk) // if all enemy ships have sunk
         {
-            await Clients.Group(currentGame.Group.Id).SendAsync("GameOver", new { PlayerName = currentPlayer.Name, PlayerConnectionId = Context.ConnectionId}); // send to players that game is over and send winner name
+            await Clients.Group(_currentGame.Group.Id).SendAsync("GameOver", new { WinnerPlayerName = _currentPlayer.Name, WinnerPlayerConnectionId = Context.ConnectionId}); // send to players that game is over and send winner name
             return;
         }
         
@@ -106,93 +118,24 @@ public class GameHub : Hub
     
     public async Task MakeMove(int x, int y)
     {
-        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
-        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
+        var _currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
+        var _currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
 
 
         var hitObject = new HitObject();
         hitObject.Row = y;
         hitObject.Column = x;
         hitObject.IsHit = true;
-        await Clients.Client(currentPlayer.Id).SendAsync("ReturnMove", hitObject);
+        await Clients.Client(_currentPlayer.Id).SendAsync("ReturnMove", hitObject);
     }
     
     // public override Task OnDisconnectedAsync(Exception exception)
     // {
-    //     var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
-    //     var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
+    //     var _currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
+    //     var _currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
     //     
-    //     currentGame.RemovePlayerFromGame(currentPlayer);
-    //     Clients.Group(currentGame.Group.Id).SendAsync("GameOverPlayerLeft");
-    //
-    //     return base.OnDisconnectedAsync(exception);
-    // }
-    // private void StartGame(string gameId)
-    // {
-    //     var game = _gameManager.Games.Where(x => x.Group.Id == gameId).First();
-    //     var gamePlayers = game.GetPlayers();
-    //     
-    //     foreach (var player in gamePlayers)
-    //     {
-    //         var gameBoard = player.OwnBoard;
-    //         gameBoard.Initialize(); // Initialize the player's game board with 0's
-    //         gameBoard.AddRandomShipTest(); // and some ships for testing all 1x1
-    //         
-    //         var enemyBoard = player.EnemyBoard;
-    //         enemyBoard.Initialize(); // Initialize the player's opponent boards with 0's
-    //     }
-    //     
-    //     foreach (var player in gamePlayers)
-    //     {
-    //         var opponent = gamePlayers.First(p => p.Id != player.Id);
-    //         var opponentGameBoard = opponent.EnemyBoard; //enemy board aka board where you make hits
-    //         
-    //         Clients.Client(player.Id).SendAsync("OpponentName", opponent.Name);
-    //         Clients.Client(player.Id).SendAsync("OpponentGameBoard", opponentGameBoard);
-    //     }
-    //
-    //     Clients.Client(game.Player1.Id).SendAsync("YourTurn");
-    // }
-    //
-    // public async Task MakeMove(int x, int y)
-    // {
-    //     var currentGame = _games.Where(x => x.GetPlayers().Any(x => x.Id == Context.ConnectionId)).First();
-    //     var currentPlayer = currentGame.GetPlayers().Where(x => x.Id == Context.ConnectionId).First(); // move this to global
-    //     //if (currentPlayer != null && !currentPlayer.HasTurn) return;
-    //
-    //     var opponent = currentGame.GetPlayers().First(p => p.Id != currentPlayer.Id);
-    //     var opponentGameBoard = opponent.OwnBoard;
-    //
-    //     var isHit = opponentGameBoard.MarkCell(x, y); // mark hit 
-    //     currentPlayer.EnemyBoard.MarkCell(x, y); // show on my screen ig?
-    //     
-    //     await Clients.Client(currentPlayer.Id).SendAsync("MoveResult", x, y, isHit);
-    //     await Clients.Client(opponent.Id).SendAsync("OpponentMove", x, y, isHit);
-    //
-    //     if (opponentGameBoard.IsGameOver())
-    //     {
-    //         foreach (var player in currentGame.GetPlayers())
-    //         {
-    //             await Clients.Client(player.Id).SendAsync("GameOver"); // send winner probably
-    //         }
-    //     }
-    //     else
-    //     {
-    //         currentPlayer.HasTurn = false;
-    //         opponent.HasTurn = true;
-    //         await Clients.Client(opponent.Id).SendAsync("YourTurn");
-    //     }
-    // }
-
-    // public override Task OnDisconnectedAsync(Exception exception)
-    // {
-    //     var disconnectedPlayer = _players.FirstOrDefault(p => p.Id == Context.ConnectionId);
-    //     if (disconnectedPlayer != null)
-    //     {
-    //         _players.Remove(disconnectedPlayer);
-    //         _gameBoards.Remove(disconnectedPlayer.Id);
-    //         Clients.All.SendAsync("PlayerLeft", disconnectedPlayer.Name);
-    //     }
+    //     _currentGame.RemovePlayerFromGame(_currentPlayer);
+    //     Clients.Group(_currentGame.Group.Id).SendAsync("GameOverPlayerLeft");
     //
     //     return base.OnDisconnectedAsync(exception);
     // }

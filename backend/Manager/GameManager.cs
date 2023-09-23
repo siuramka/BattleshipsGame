@@ -6,7 +6,7 @@ public class GameManager
 {
     private static GameManager _instance;
     private readonly List<Game> _games = new();
-
+    private static readonly object threadLock = new object();
     private GameManager()
     {
     }
@@ -15,12 +15,15 @@ public class GameManager
     {
         get
         {
-            if (_instance == null)
+            lock (threadLock)
             {
-                _instance = new GameManager();
-            }
+                if (_instance == null)
+                {
+                    _instance = new GameManager();
+                }
 
-            return _instance;
+                return _instance;
+            }
         }
     }
 
