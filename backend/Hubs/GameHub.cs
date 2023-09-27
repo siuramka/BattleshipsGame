@@ -14,13 +14,9 @@ public class GameHub : Hub
         _gameManager = GameManager.Instance; //singleton because each new connection creates new hub instance
 
     private GameService _gameService;
-    private Player _currentPlayer = null;
-    private Game _currentGame = null;
     public GameHub() : base()
     {
         _gameService = new();
-        _currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
-        _currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
     }
 
     private class HitObject
@@ -64,14 +60,16 @@ public class GameHub : Hub
 
     public async Task SetShipsOnBoard(List<Ship> ships)
     {
-        if (_currentPlayer == null || _currentGame == null) return;
+        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
+        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
+        if (currentPlayer == null || currentGame == null) return;
 
-        _gameService.SetupPlayerShips(_currentPlayer, ships);
-        _currentPlayer.HasSetupShips = true;
+        _gameService.SetupPlayerShips(currentPlayer, ships);
+        currentPlayer.HasSetupShips = true;
 
-        if (_currentGame.HavePlayersSetupShips())
+        if (currentGame.HavePlayersSetupShips())
         {
-            await StartGame(_currentGame);
+            await StartGame(currentGame);
         }
     }
     
@@ -84,10 +82,13 @@ public class GameHub : Hub
 
     public async Task EnterTestMode()
     {
-        var enemyPlayer = _currentGame.GetEnemyPlayer(_currentPlayer);
+        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
+        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
+        
+        var enemyPlayer = currentGame.GetEnemyPlayer(currentPlayer);
         var enemyShips = enemyPlayer.OwnBoard.GetShips();
 
-        await SendTestModeShips(_currentPlayer, enemyShips);
+        await SendTestModeShips(currentPlayer, enemyShips);
     }
 
     private async Task SendTestModeShips(Player player, List<Ship> ships)
@@ -97,18 +98,20 @@ public class GameHub : Hub
     
     public async Task NewMakeMove(int x, int y)
     {
-        var enemyPlayer = _currentGame.GetEnemyPlayer(_currentPlayer);
+        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
+        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
+        var enemyPlayer = currentGame.GetEnemyPlayer(currentPlayer);
         
         var enemyBoard = enemyPlayer.OwnBoard;
 
         bool hitEnemyShip = enemyBoard.HitCoordinate(x, y);
         
-        await Clients.Client(_currentPlayer.Id).SendAsync("ReturnMove", x,y ,hitEnemyShip);//return to attacker if he hit ship or not
+        await Clients.Client(currentPlayer.Id).SendAsync("ReturnMove", x,y ,hitEnemyShip);//return to attacker if he hit ship or not
         await Clients.Client(enemyPlayer.Id).SendAsync("OpponentResult", x,y,hitEnemyShip);//return to who is getting attacked whenether or not his ship got hit
 
         if (enemyBoard.HaveAllShipsSunk) // if all enemy ships have sunk
         {
-            await Clients.Group(_currentGame.Group.Id).SendAsync("GameOver", new { WinnerPlayerName = _currentPlayer.Name, WinnerPlayerConnectionId = Context.ConnectionId}); // send to players that game is over and send winner name
+            await Clients.Group(currentGame.Group.Id).SendAsync("GameOver", new { WinnerPlayerName = enemyPlayer.Name, WinnerPlayerConnectionId = Context.ConnectionId}); // send to players that game is over and send winner name
             return;
         }
         
@@ -118,11 +121,13 @@ public class GameHub : Hub
     
     public async Task MakeMove(int x, int y)
     {
+        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
+        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
         var hitObject = new HitObject();
         hitObject.Row = y;
         hitObject.Column = x;
         hitObject.IsHit = true;
-        await Clients.Client(_currentPlayer.Id).SendAsync("ReturnMove", hitObject);
+        await Clients.Client(currentPlayer.Id).SendAsync("ReturnMove", hitObject);
     }
     
     // public override Task OnDisconnectedAsync(Exception exception)
