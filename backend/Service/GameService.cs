@@ -5,13 +5,10 @@ namespace backend.Service;
 
 public class GameService
 {
-    public void SetupPlayerShips(Player player, List<Ship> ships)
+    public void AddShipToPlayer(Player player, Ship ship)
     {
         var playerBoard = player.OwnBoard;
-        foreach (var ship in ships)
-        {
-            playerBoard.AddShip(ship);
-        }
+        playerBoard.AddShip(ship);
 
     }
 }

@@ -3,6 +3,7 @@
 public class Ship
 {
     public List<ShipCoordinate> Coordinates { get; set; } = new();
+    public int ShipSize = 1;
 
     public Ship()
     {

@@ -6,11 +6,14 @@ namespace backend.Models.Entity;
 public class GameBoard
 {
     private List<Ship> _battleships = new();
-    private List<ShipCoordinate> _missedCoordinates = new(); 
+    private List<ShipCoordinate> _missedCoordinates = new();
+
+    private int maxSizeX = 10;
+    private int maxSizeY = 10;
     public void AddShip(Ship ship)
     {
         var shipPosition = ship.Coordinates;
-        //todo: could check overlap coordinates prob
+
         _battleships.Add(ship);
     }
     public bool HaveAllShipsSunk

@@ -3,6 +3,7 @@ using backend.Models.Entity;
 using backend.Models.Entity.Ships;
 using backend.Service;
 using Microsoft.AspNetCore.SignalR;
+using System.Diagnostics;
 
 namespace backend.Hubs;
 
@@ -55,29 +56,53 @@ public class GameHub : Hub
 
     private async Task SetupShips(string gameId)
     {
-        await Clients.Group(gameId).SendAsync("SetupShips"); //send to frontend for players to setup ships
+        await Clients.Group(gameId).SendAsync("SetupShips", ""); //send to frontend for players to setup ships
     }
-
-    public async Task SetShipsOnBoard(List<Ship> ships)
+   // _connection.SendAsync("SetShip", size, x, y, vertical);
+    public async Task AddShipToPlayer(int shipSize, int x, int y, bool isVerticalPlacement)
     {
         var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
         var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
         if (currentPlayer == null || currentGame == null) return;
 
-        _gameService.SetupPlayerShips(currentPlayer, ships);
+        Ship ship;
+
+        if (shipSize == 1)
+        {
+            ship = new Ship();
+            currentPlayer.OwnBoard.AddShip(ship);
+        }
+
+        if (x > 10 || y > 10)
+        {
+            await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", false, -1, -1,1, false); //send that cant place there
+        }
+
+
+        await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", true, x, y, shipSize, false);
+
+    }
+    public async Task DoneShipSetup()
+    {
+        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
+
         currentPlayer.HasSetupShips = true;
+
+        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
 
         if (currentGame.HavePlayersSetupShips())
         {
             await StartGame(currentGame);
         }
     }
-    
+
     private async Task StartGame(Game _currentGame)
     {
-        await Clients.Group(_currentGame.Group.Id).SendAsync("GameStarted");
+        await Clients.Group(_currentGame.Group.Id).SendAsync("GameStarted", "GameStarted");
+
         await Task.Delay(TimeSpan.FromSeconds(1)); // wait a second
-        await Clients.Client(_currentGame.Player1.Id).SendAsync("YourTurn"); // Player1 starts the game
+
+        await Clients.Client(_currentGame.Player1.Id).SendAsync("YourTurn", "YourTurn"); // Player1 starts the game
     }
 
     public async Task EnterTestMode()
@@ -96,7 +121,7 @@ public class GameHub : Hub
         await Clients.Client(player.Id).SendAsync("ReturnEnterTestMode", ships);
     }
     
-    public async Task NewMakeMove(int x, int y)
+    public async Task MakeMove(int x, int y)
     {
         var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
         var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
@@ -115,20 +140,13 @@ public class GameHub : Hub
             return;
         }
         
-        //return to enemy that its his turn
-        await Clients.Client(enemyPlayer.Id).SendAsync("YourTurn");
+        if(hitEnemyShip)
+        {
+            await Clients.Client(currentPlayer.Id).SendAsync("YourTurn", "YourTurn");
+        }
+        await Clients.Client(enemyPlayer.Id).SendAsync("YourTurn", "YourTurn");
     }
     
-    public async Task MakeMove(int x, int y)
-    {
-        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
-        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
-        var hitObject = new HitObject();
-        hitObject.Row = y;
-        hitObject.Column = x;
-        hitObject.IsHit = true;
-        await Clients.Client(currentPlayer.Id).SendAsync("ReturnMove", hitObject);
-    }
     
     // public override Task OnDisconnectedAsync(Exception exception)
     // {
