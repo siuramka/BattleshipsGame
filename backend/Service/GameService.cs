@@ -9,6 +9,13 @@ public class GameService
     {
         var playerBoard = player.OwnBoard;
         playerBoard.AddShip(ship);
+    }
 
+    public void CalculateShipCoordinates(Ship ship, int x, int y)
+    {
+        if(ship.ShipSize == 1)
+        {
+            ship.AddCoordinate(x, y);
+        }
     }
 }

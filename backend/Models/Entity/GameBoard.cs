@@ -12,8 +12,6 @@ public class GameBoard
     private int maxSizeY = 10;
     public void AddShip(Ship ship)
     {
-        var shipPosition = ship.Coordinates;
-
         _battleships.Add(ship);
     }
     public bool HaveAllShipsSunk
@@ -23,11 +21,11 @@ public class GameBoard
             return _battleships.All(x => x.IsSunk());
         }
     }
-    public bool HitCoordinate(int x, int y)
+    public bool TryHit(int x, int y)
     {
         foreach (var battleship in _battleships)
         {
-            if (!battleship.IsCoordinateHit(x, y))
+            if (battleship.CanHitCoordinate(x, y))
             {
                 battleship.HitCoordinate(x, y);
                 return true;

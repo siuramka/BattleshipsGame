@@ -70,6 +70,7 @@ public class GameHub : Hub
         if (shipSize == 1)
         {
             ship = new Ship();
+            _gameService.CalculateShipCoordinates(ship, x, y);
             currentPlayer.OwnBoard.AddShip(ship);
         }
 
@@ -129,17 +130,21 @@ public class GameHub : Hub
         
         var enemyBoard = enemyPlayer.OwnBoard;
 
-        bool hitEnemyShip = enemyBoard.HitCoordinate(x, y);
+        bool hitEnemyShip = enemyBoard.TryHit(x, y);
         
         await Clients.Client(currentPlayer.Id).SendAsync("ReturnMove", x,y ,hitEnemyShip);//return to attacker if he hit ship or not
         await Clients.Client(enemyPlayer.Id).SendAsync("OpponentResult", x,y,hitEnemyShip);//return to who is getting attacked whenether or not his ship got hit
+        
+        await Task.Delay(TimeSpan.FromSeconds(1));
 
         if (enemyBoard.HaveAllShipsSunk) // if all enemy ships have sunk
         {
             await Clients.Group(currentGame.Group.Id).SendAsync("GameOver", new { WinnerPlayerName = enemyPlayer.Name, WinnerPlayerConnectionId = Context.ConnectionId}); // send to players that game is over and send winner name
             return;
         }
-        
+
+        await Task.Delay(TimeSpan.FromSeconds(1));
+
         if(hitEnemyShip)
         {
             await Clients.Client(currentPlayer.Id).SendAsync("YourTurn", "YourTurn");

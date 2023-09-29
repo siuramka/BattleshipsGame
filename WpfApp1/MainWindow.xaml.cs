@@ -131,17 +131,39 @@ namespace WpfApp1
             _connection.On<string>("SetupShips", HandleOnSetupShips);
             _connection.On<string>("GameStarted", HandleOnGameStarted);
             _connection.On<string>("YourTurn", HandleOnPlayerTurn);
-
+            //attacks
             _connection.On<int, int, bool>("ReturnMove", HandleOnReturnMove);
+            _connection.On<int, int, bool>("OpponentResult", HandleOnOpponentResult);
 
-  
             _connection.On<bool,int,int,int,bool>("SetupShipResponse", HandleOnSetShipResult); // need to add DTO or smt
 
         }
+        private void HandleOnOpponentResult(int x, int y, bool hitMyShip)
+        {
+            if (hitMyShip)
+            {
+                SendMessageToClient("Enemy hit your ship!" + x + " " + y);
+                this.Dispatcher.Invoke(() =>
+                {
+                    MyButtons[y, x].Content = hitMyShip ? "X" : "O";
+                });
+            }
+            else
+            {
+                SendMessageToClient("Enemy missed!" + x + " " + y);
+                this.Dispatcher.Invoke(() =>
+                {
+                    MyButtons[y, x].Content = hitMyShip ? "X" : "O";
+                });
+            }
+        }
+
+
         private void HandleOnReturnMove(int x, int y, bool hitEnemyShip)
         {
             if (hitEnemyShip)
             {
+                SendMessageToClient("You hit enemy ship!" + x + " " + y);
                 this.Dispatcher.Invoke(() =>
                 {
                     EnemyButtons[y, x].Content = hitEnemyShip ? "X" : "O";
@@ -149,29 +171,31 @@ namespace WpfApp1
             }
             else
             {
+                SendMessageToClient("You missed enemy ship!" + x + " " + y);
                 this.Dispatcher.Invoke(() =>
                 {
                     MyButtons[y, x].Content = hitEnemyShip ? "X" : "O";
                 });
             }
         }
-        private void HandleOnPlayerTurn(string _)
+        private void SendMessageToClient(string message)
         {
             this.Dispatcher.Invoke(() =>
             {
-                MessagesListbox.Items.Add("Your Turn!");
+                MessagesListbox.Items.Add(message);
 
             });
+        }
+        private void HandleOnPlayerTurn(string _)
+        {
+            SendMessageToClient("Your Turn!");
             EnableEnemyBoard(true);
         }
 
         private void HandleOnGameStarted(string _)
         {
-            this.Dispatcher.Invoke(() =>
-            {
-                MessagesListbox.Items.Add("Game started!");
-
-            });
+            gameState = "gameStarted";
+            SendMessageToClient("Game started");
         }
 
         private void HandleOnWaitingForOpponent(string username)

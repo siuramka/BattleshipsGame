@@ -2,19 +2,21 @@
 
 public class Ship
 {
-    public List<ShipCoordinate> Coordinates { get; set; } = new();
+    public List<ShipCoordinate> Coordinates { get; } = new();
     public int ShipSize = 1;
 
     public Ship()
     {
     }
-    
-    public bool IsCoordinateHit(int x, int y)
+    public void AddCoordinate(int x, int y)
     {
-        return Coordinates.Any(coord => coord.X == x && coord.Y == y && coord.IsHit);
+        Coordinates.Add(new ShipCoordinate(x, y));
+    }
+    public bool CanHitCoordinate(int x, int y)
+    {
+        return Coordinates.Any(coord => (coord.X == x && coord.Y == y && !coord.IsHit));
     }
 
-    
     public void HitCoordinate(int x, int y)
     {
         foreach (var coordinate in Coordinates)
@@ -26,8 +28,8 @@ public class Ship
             }
         }
     }
-    
-    
+
+
     public bool IsSunk()
     {
         return Coordinates.All(x => x.IsHit);
