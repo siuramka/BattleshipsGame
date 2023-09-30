@@ -1,12 +1,17 @@
-﻿namespace backend.Models.Entity.Ships;
+﻿using backend.Strategies;
+using Shared;
 
-public class Ship
+namespace backend.Models.Entity.Ships;
+
+public class SmallShip
 {
     public List<ShipCoordinate> Coordinates { get; } = new();
     public int ShipSize = 1;
+    public ShipType ShipType { get;}
 
-    public Ship()
+    public SmallShip()
     {
+        ShipType = ShipType.SmallShip;
     }
     public void AddCoordinate(int x, int y)
     {
@@ -16,7 +21,6 @@ public class Ship
     {
         return Coordinates.Any(coord => (coord.X == x && coord.Y == y && !coord.IsHit));
     }
-
     public void HitCoordinate(int x, int y)
     {
         foreach (var coordinate in Coordinates)
@@ -28,6 +32,17 @@ public class Ship
             }
         }
     }
+    //public void HitCoordinate(int x, int y)
+    //{
+    //    foreach (var coordinate in Coordinates)
+    //    {
+    //        if (coordinate.X == x && coordinate.Y == y)
+    //        {
+    //            coordinate.Hit();
+    //            return;
+    //        }
+    //    }
+    //}
 
 
     public bool IsSunk()

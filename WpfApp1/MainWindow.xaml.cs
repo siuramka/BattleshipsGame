@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.VisualBasic;
 using Microsoft.Xaml.Behaviors;
+using Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,8 +16,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using WpfApp1.Attacks;
 using Interaction = Microsoft.Xaml.Behaviors.Interaction;
-
 
 
 //// if you want to update UI state, you need to call your change in this
@@ -28,6 +29,10 @@ using Interaction = Microsoft.Xaml.Behaviors.Interaction;
 //});
 //
 
+//todo: add game ending/winner
+//todo: classes classes classes classes
+
+//todo later: remove ship attack from dropdown if sunk
 
 namespace WpfApp1
 {
@@ -36,13 +41,13 @@ namespace WpfApp1
     /// </summary>
     public partial class MainWindow : Window
     {
-        private string[] ContextMenuItems = { "Cruiser horizontal1x1" };
+        private string[] ContextMenuItems = { "Cruiser horizontal1x1" }; // change to classes
         //private string[] ContextMenuItems = { "Cruiser horizontal1x1", "Submarine horizontal2x1",
         //    "Destroyer horizontally3x1", "Battleship horizontally4x1", "Cruiser vertically1x1",
         //    "Submarine vertically1x2", "Destroyer vertically1x3", "Battleship vertically1x4" };
         private Button[,] MyButtons = new Button[10, 10];
         private Button[,] EnemyButtons = new Button[10, 10];
-        private string gameState = "";
+        private string gameState = ""; // change to class ?
         private HubConnection _connection;
         public MainWindow()
         {
@@ -68,8 +73,8 @@ namespace WpfApp1
                 b.ContextMenu = new ContextMenu();
                 for (int i = 0; i < ContextMenuItems.Length; i++)
                 {
-                    var tag = new int[] { x, y, (i % 4) + 1, i / 4 };
-                    var item = new MenuItem { Header = ContextMenuItems[i], Tag = tag };
+                    var tag = new int[] { x, y, (i % 4) + 1, i / 4 }; // change to classes
+                    var item = new MenuItem { Header = ContextMenuItems[i], Tag = tag }; // change to classes
                     this.Dispatcher.Invoke(() =>
                     {
                         item.Click += HandleShipArrangement;
@@ -97,6 +102,10 @@ namespace WpfApp1
         }
         private void InitializeUi()
         {
+            this.Dispatcher.Invoke(() =>
+            {
+                ShipAttacksBox.IsEnabled = true;
+            });
             for (int y = 0; y < 10; y++)
             {
                 for (int x = 0; x < 10; x++)
@@ -232,11 +241,30 @@ namespace WpfApp1
             EnableMyBoard(false);
 
         }
+        private void HandleShipAttacks(int size)
+        {
+            if (size == 1)
+            {
+                this.Dispatcher.Invoke(() =>
+                {
+                    ShipAttacksBox.Items.Add(new SmallShipAttack());
+
+                });
+                this.Dispatcher.Invoke(() =>
+                {
+                    if (ShipAttacksBox.SelectedItem == null)
+                    {
+                        ShipAttacksBox.SelectedIndex = 0;
+                    }
+                });
+
+            }
+        }
         private void HandleOnSetShipResult(bool result, int x, int y, int size, bool vertical)
         {
-
             if (result)
             {
+                HandleShipAttacks(size);
                 if (vertical)
                 {
                     for (int i = y; i < y + size; i++)
@@ -291,9 +319,6 @@ namespace WpfApp1
 
         }
 
-        private void SendChatMessage(object sender, KeyEventArgs e)
-        {
-        }
         private void HandleAction(object sender, RoutedEventArgs e)
         {
             if (this.gameState == "setupingships")
@@ -304,6 +329,16 @@ namespace WpfApp1
 
             ActionButton.IsEnabled = false;
         }
+
+        //private int GetSelectedShipAttack()
+        //{
+        //    object selectedShipAttack;
+        //    this.Dispatcher.Invoke(() =>
+        //    {
+        //        selectedShipAttack = ShipAttacksBox.SelectedItem;
+        //    });
+        //}
+
         private void HandleShot(object sender, RoutedEventArgs e)
         {
             var button = (Button)sender;
@@ -311,11 +346,11 @@ namespace WpfApp1
             int x = tag[0];
             int y = tag[1];
 
-            _connection.SendAsync("MakeMove",x, y);
+            ShipAttackBase selectedShipAttack = (ShipAttackBase)ShipAttacksBox.SelectedItem;
+            ShipType attackShipType = selectedShipAttack.ShipType;
+
+            _connection.SendAsync("MakeMove",x, y, attackShipType);
             EnableEnemyBoard(false);
-        }
-        private void HandleClearBoard(object sender, RoutedEventArgs e)
-        {
         }
     }
 }

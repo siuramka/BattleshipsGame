@@ -5,13 +5,13 @@ namespace backend.Service;
 
 public class GameService
 {
-    public void AddShipToPlayer(Player player, Ship ship)
+    public void AddShipToPlayer(Player player, SmallShip ship)
     {
         var playerBoard = player.OwnBoard;
         playerBoard.AddShip(ship);
     }
 
-    public void CalculateShipCoordinates(Ship ship, int x, int y)
+    public void CalculateShipCoordinates(SmallShip ship, int x, int y)
     {
         if(ship.ShipSize == 1)
         {

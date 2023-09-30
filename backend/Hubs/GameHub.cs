@@ -3,6 +3,7 @@ using backend.Models.Entity;
 using backend.Models.Entity.Ships;
 using backend.Service;
 using Microsoft.AspNetCore.SignalR;
+using Shared;
 using System.Diagnostics;
 
 namespace backend.Hubs;
@@ -29,10 +30,10 @@ public class GameHub : Hub
 
     public async Task JoinGame()
     {
-        var playerName =_gameManager.EmptyGameExist() ? "Player2" : "Player1"; // Player1 if hes the first to join the game
+        var playerName = _gameManager.EmptyGameExist() ? "Player2" : "Player1"; // Player1 if hes the first to join the game
         var player = new Player { Id = Context.ConnectionId, Name = playerName };
         Game game = new Game();
-        
+
         if (!_gameManager.EmptyGameExist()) // if no empty games
         {
             game.Player1 = player;
@@ -47,7 +48,7 @@ public class GameHub : Hub
             x.WaitingForOpponent == true); //get the first game where player is waiting for an opponent
         game.Player2 = player;
         game.WaitingForOpponent = false;
-        
+
         await Groups.AddToGroupAsync(game.Player1.Id, game.Group.Id);
         await Groups.AddToGroupAsync(game.Player2.Id, game.Group.Id);
         await Clients.Client(player.Id).SendAsync("WaitingForOpponent", player.Name);
@@ -58,25 +59,28 @@ public class GameHub : Hub
     {
         await Clients.Group(gameId).SendAsync("SetupShips", ""); //send to frontend for players to setup ships
     }
-   // _connection.SendAsync("SetShip", size, x, y, vertical);
+    // _connection.SendAsync("SetShip", size, x, y, vertical);
     public async Task AddShipToPlayer(int shipSize, int x, int y, bool isVerticalPlacement)
     {
         var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
         var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
         if (currentPlayer == null || currentGame == null) return;
 
-        Ship ship;
+        //
+        // add handling for ship placement on different size ships etc...
+        //
+        SmallShip ship;
 
         if (shipSize == 1)
         {
-            ship = new Ship();
+            ship = new SmallShip();
             _gameService.CalculateShipCoordinates(ship, x, y);
             currentPlayer.OwnBoard.AddShip(ship);
         }
 
         if (x > 10 || y > 10)
         {
-            await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", false, -1, -1,1, false); //send that cant place there
+            await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", false, -1, -1, 1, false); //send that cant place there
         }
 
 
@@ -110,49 +114,50 @@ public class GameHub : Hub
     {
         var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
         var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
-        
+
         var enemyPlayer = currentGame.GetEnemyPlayer(currentPlayer);
         var enemyShips = enemyPlayer.OwnBoard.GetShips();
 
         await SendTestModeShips(currentPlayer, enemyShips);
     }
 
-    private async Task SendTestModeShips(Player player, List<Ship> ships)
+    private async Task SendTestModeShips(Player player, List<SmallShip> ships)
     {
         await Clients.Client(player.Id).SendAsync("ReturnEnterTestMode", ships);
     }
-    
-    public async Task MakeMove(int x, int y)
+
+    public async Task MakeMove(int x, int y, ShipType attackShipType)
     {
         var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
         var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
         var enemyPlayer = currentGame.GetEnemyPlayer(currentPlayer);
-        
+
         var enemyBoard = enemyPlayer.OwnBoard;
 
+        //todo: handle attackShipType strategy
         bool hitEnemyShip = enemyBoard.TryHit(x, y);
-        
-        await Clients.Client(currentPlayer.Id).SendAsync("ReturnMove", x,y ,hitEnemyShip);//return to attacker if he hit ship or not
-        await Clients.Client(enemyPlayer.Id).SendAsync("OpponentResult", x,y,hitEnemyShip);//return to who is getting attacked whenether or not his ship got hit
-        
+
+        await Clients.Client(currentPlayer.Id).SendAsync("ReturnMove", x, y, hitEnemyShip);//return to attacker if he hit ship or not
+        await Clients.Client(enemyPlayer.Id).SendAsync("OpponentResult", x, y, hitEnemyShip);//return to who is getting attacked whenether or not his ship got hit
+
         await Task.Delay(TimeSpan.FromSeconds(1));
 
         if (enemyBoard.HaveAllShipsSunk) // if all enemy ships have sunk
         {
-            await Clients.Group(currentGame.Group.Id).SendAsync("GameOver", new { WinnerPlayerName = enemyPlayer.Name, WinnerPlayerConnectionId = Context.ConnectionId}); // send to players that game is over and send winner name
+            await Clients.Group(currentGame.Group.Id).SendAsync("GameOver", new { WinnerPlayerName = enemyPlayer.Name, WinnerPlayerConnectionId = Context.ConnectionId }); // send to players that game is over and send winner name
             return;
         }
 
         await Task.Delay(TimeSpan.FromSeconds(1));
 
-        if(hitEnemyShip)
+        if (hitEnemyShip)
         {
             await Clients.Client(currentPlayer.Id).SendAsync("YourTurn", "YourTurn");
         }
         await Clients.Client(enemyPlayer.Id).SendAsync("YourTurn", "YourTurn");
     }
-    
-    
+
+
     // public override Task OnDisconnectedAsync(Exception exception)
     // {
     //     var _currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);

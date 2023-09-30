@@ -5,12 +5,12 @@ namespace backend.Models.Entity;
 //Would be better to write a separate class for the grid
 public class GameBoard
 {
-    private List<Ship> _battleships = new();
+    private List<SmallShip> _battleships = new();
     private List<ShipCoordinate> _missedCoordinates = new();
 
     private int maxSizeX = 10;
     private int maxSizeY = 10;
-    public void AddShip(Ship ship)
+    public void AddShip(SmallShip ship)
     {
         _battleships.Add(ship);
     }
@@ -35,9 +35,9 @@ public class GameBoard
         return false;
     }
 
-    public List<Ship> GetShips()
+    public List<SmallShip> GetShips()
     {
-        return new List<Ship>(_battleships);
+        return new List<SmallShip>(_battleships);
     }
     
     //gameover check if all sunk
