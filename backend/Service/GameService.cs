@@ -13,9 +13,7 @@ public class GameService
 
     public void CalculateShipCoordinates(SmallShip ship, int x, int y)
     {
-        if(ship.ShipSize == 1)
-        {
-            ship.AddCoordinate(x, y);
-        }
+        //if small ship
+        ship.AddCoordinate(x, y);
     }
 }

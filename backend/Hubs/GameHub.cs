@@ -2,8 +2,10 @@
 using backend.Models.Entity;
 using backend.Models.Entity.Ships;
 using backend.Service;
+using backend.Strategies.Ships;
 using Microsoft.AspNetCore.SignalR;
 using Shared;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace backend.Hubs;
@@ -126,7 +128,7 @@ public class GameHub : Hub
         await Clients.Client(player.Id).SendAsync("ReturnEnterTestMode", ships);
     }
 
-    public async Task MakeMove(int x, int y, ShipType attackShipType)
+    public async Task MakeMove(int x, int y, SmallShip ship)
     {
         var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
         var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
@@ -134,13 +136,20 @@ public class GameHub : Hub
 
         var enemyBoard = enemyPlayer.OwnBoard;
 
-        //todo: handle attackShipType strategy
-        bool hitEnemyShip = enemyBoard.TryHit(x, y);
+        List<ShipCoordinate> hitShipCoordinates = new();
 
-        await Clients.Client(currentPlayer.Id).SendAsync("ReturnMove", x, y, hitEnemyShip);//return to attacker if he hit ship or not
-        await Clients.Client(enemyPlayer.Id).SendAsync("OpponentResult", x, y, hitEnemyShip);//return to who is getting attacked whenether or not his ship got hit
+        if (ship is SmallShip)
+        {
+            enemyBoard.SetEnemyAttackStrategy(ship.GetAtackStrategy());
+            hitShipCoordinates = enemyBoard.TryHit(x, y);
+        }
 
-        await Task.Delay(TimeSpan.FromSeconds(1));
+        foreach(var hitCoord in hitShipCoordinates)
+        {
+            await Clients.Client(currentPlayer.Id).SendAsync("ReturnMove", hitCoord.X, hitCoord.Y, true);//return to attacker if he hit ship or not
+            await Clients.Client(enemyPlayer.Id).SendAsync("OpponentResult", hitCoord.X, hitCoord.Y, true);//return to who is getting attacked whenether or not his ship got hit
+        }
+
 
         if (enemyBoard.HaveAllShipsSunk) // if all enemy ships have sunk
         {
@@ -148,12 +157,13 @@ public class GameHub : Hub
             return;
         }
 
-        await Task.Delay(TimeSpan.FromSeconds(1));
 
-        if (hitEnemyShip)
+        if (hitShipCoordinates.Any())
         {
             await Clients.Client(currentPlayer.Id).SendAsync("YourTurn", "YourTurn");
+            return;
         }
+
         await Clients.Client(enemyPlayer.Id).SendAsync("YourTurn", "YourTurn");
     }
 

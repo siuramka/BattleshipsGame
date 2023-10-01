@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
+﻿using backend.Models.Entity.Ships;
+using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.VisualBasic;
 using Microsoft.Xaml.Behaviors;
 using Shared;
@@ -16,7 +17,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using WpfApp1.Attacks;
 using Interaction = Microsoft.Xaml.Behaviors.Interaction;
 
 
@@ -247,7 +247,7 @@ namespace WpfApp1
             {
                 this.Dispatcher.Invoke(() =>
                 {
-                    ShipAttacksBox.Items.Add(new SmallShipAttack());
+                    ShipAttacksBox.Items.Add(new SmallShip());
 
                 });
                 this.Dispatcher.Invoke(() =>
@@ -330,15 +330,6 @@ namespace WpfApp1
             ActionButton.IsEnabled = false;
         }
 
-        //private int GetSelectedShipAttack()
-        //{
-        //    object selectedShipAttack;
-        //    this.Dispatcher.Invoke(() =>
-        //    {
-        //        selectedShipAttack = ShipAttacksBox.SelectedItem;
-        //    });
-        //}
-
         private void HandleShot(object sender, RoutedEventArgs e)
         {
             var button = (Button)sender;
@@ -346,10 +337,9 @@ namespace WpfApp1
             int x = tag[0];
             int y = tag[1];
 
-            ShipAttackBase selectedShipAttack = (ShipAttackBase)ShipAttacksBox.SelectedItem;
-            ShipType attackShipType = selectedShipAttack.ShipType;
+            SmallShip selectedAttackShip = (SmallShip)ShipAttacksBox.SelectedItem;
 
-            _connection.SendAsync("MakeMove",x, y, attackShipType);
+            _connection.SendAsync("MakeMove",x, y, selectedAttackShip);
             EnableEnemyBoard(false);
         }
     }

@@ -1,4 +1,5 @@
 ﻿using backend.Models.Entity.Ships;
+using backend.Strategies;
 
 namespace backend.Models.Entity;
 
@@ -7,9 +8,14 @@ public class GameBoard
 {
     private List<SmallShip> _battleships = new();
     private List<ShipCoordinate> _missedCoordinates = new();
+    private IAttackStrategy _attackStrategy;
 
     private int maxSizeX = 10;
     private int maxSizeY = 10;
+    public void SetEnemyAttackStrategy(IAttackStrategy strategy)
+    {
+        _attackStrategy = strategy;
+    }
     public void AddShip(SmallShip ship)
     {
         _battleships.Add(ship);
@@ -21,18 +27,9 @@ public class GameBoard
             return _battleships.All(x => x.IsSunk());
         }
     }
-    public bool TryHit(int x, int y)
+    public List<ShipCoordinate> TryHit(int x, int y)
     {
-        foreach (var battleship in _battleships)
-        {
-            if (battleship.CanHitCoordinate(x, y))
-            {
-                battleship.HitCoordinate(x, y);
-                return true;
-            }
-        }
-        _missedCoordinates.Add(new ShipCoordinate(x,y));
-        return false;
+        return _attackStrategy.TargetShip(x, y, _battleships, _missedCoordinates);
     }
 
     public List<SmallShip> GetShips()
