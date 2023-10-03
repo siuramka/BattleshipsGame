@@ -123,7 +123,7 @@ public class GameHub : Hub
         await SendTestModeShips(currentPlayer, enemyShips);
     }
 
-    private async Task SendTestModeShips(Player player, List<SmallShip> ships)
+    private async Task SendTestModeShips(Player player, List<IShip> ships)
     {
         await Clients.Client(player.Id).SendAsync("ReturnEnterTestMode", ships);
     }

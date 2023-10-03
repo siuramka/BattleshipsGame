@@ -4,7 +4,7 @@ using Shared;
 
 namespace backend.Models.Entity.Ships;
 
-public class SmallShip
+public class SmallShip : IShip
 {
     public List<ShipCoordinate> Coordinates { get; } = new();
     public int Size = 1;

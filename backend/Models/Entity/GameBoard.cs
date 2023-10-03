@@ -6,7 +6,7 @@ namespace backend.Models.Entity;
 //Would be better to write a separate class for the grid
 public class GameBoard
 {
-    private List<SmallShip> _battleships = new();
+    private List<IShip> _battleships = new();
     private List<ShipCoordinate> _missedCoordinates = new();
     private IAttackStrategy _attackStrategy;
 
@@ -16,7 +16,7 @@ public class GameBoard
     {
         _attackStrategy = strategy;
     }
-    public void AddShip(SmallShip ship)
+    public void AddShip(IShip ship)
     {
         _battleships.Add(ship);
     }
@@ -32,10 +32,10 @@ public class GameBoard
         return _attackStrategy.TargetShip(x, y, _battleships, _missedCoordinates);
     }
 
-    public List<SmallShip> GetShips()
+    public List<IShip> GetShips()
     {
-        return new List<SmallShip>(_battleships);
+        return new List<IShip>(_battleships);
     }
-    
+
     //gameover check if all sunk
 }

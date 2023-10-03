@@ -2,7 +2,7 @@
 
 namespace backend.Strategies.Ships
 {
-    public class SmallShipAttackStrategy : IAttackStrategy
+    public class MediumShipAttackStrategy : IAttackStrategy
     {
         public List<ShipCoordinate> TargetShip(int x, int y, List<IShip> battleships, List<ShipCoordinate> missedCoordinates)
         {
@@ -19,7 +19,6 @@ namespace backend.Strategies.Ships
                     missedCoordinates.Add(new ShipCoordinate(x, y));
                 }
             }
-            
             return hitCoordinates;
         }
     }

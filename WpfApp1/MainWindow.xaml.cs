@@ -149,6 +149,7 @@ namespace WpfApp1
         }
         private void HandleOnOpponentResult(int x, int y, bool hitMyShip)
         {
+            SendMessageToClient("ishit: " + hitMyShip);
             if (hitMyShip)
             {
                 SendMessageToClient("Enemy hit your ship!" + x + " " + y);
@@ -164,7 +165,7 @@ namespace WpfApp1
                 {
                     MyButtons[y, x].Content = hitMyShip ? "X" : "O";
                 });
-            }
+            }           
         }
 
 
