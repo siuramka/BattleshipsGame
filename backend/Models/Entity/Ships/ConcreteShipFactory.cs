@@ -2,7 +2,7 @@
 {
     public class ConcreteShipFactory : ShipFactory
     {
-        public override IShip GetShip(string Ship)
+        public override Ship GetShip(string Ship)
         {
             switch (Ship)
             {

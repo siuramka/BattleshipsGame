@@ -11,7 +11,7 @@ public class GameService
         playerBoard.AddShip(ship);
     }
 
-    public void CalculateShipCoordinates(SmallShip ship, int x, int y)
+    public void CalculateShipCoordinates(Ship ship, int x, int y)
     {
         //if small ship
         ship.AddCoordinate(x, y);

@@ -4,7 +4,7 @@ namespace backend.Strategies.Ships
 {
     public class BigShipAttackStrategy : IAttackStrategy
     {
-        public List<ShipCoordinate> TargetShip(int x, int y, List<IShip> battleships, List<ShipCoordinate> missedCoordinates)
+        public List<ShipCoordinate> TargetShip(int x, int y, List<Ship> battleships, List<ShipCoordinate> missedCoordinates)
         {
             List<ShipCoordinate> hitCoordinates = new();
             foreach (var battleship in battleships)

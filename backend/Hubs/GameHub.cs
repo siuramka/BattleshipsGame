@@ -71,7 +71,7 @@ public class GameHub : Hub
         //
         // add handling for ship placement on different size ships etc...
         //
-        SmallShip ship;
+        Ship ship;
 
         if (shipSize == 1)
         {
@@ -123,7 +123,7 @@ public class GameHub : Hub
         await SendTestModeShips(currentPlayer, enemyShips);
     }
 
-    private async Task SendTestModeShips(Player player, List<IShip> ships)
+    private async Task SendTestModeShips(Player player, List<Ship> ships)
     {
         await Clients.Client(player.Id).SendAsync("ReturnEnterTestMode", ships);
     }
@@ -140,7 +140,7 @@ public class GameHub : Hub
 
         if (ship is SmallShip)
         {
-            enemyBoard.SetEnemyAttackStrategy(ship.GetAtackStrategy());
+            enemyBoard.SetEnemyAttackStrategy(ship.GetAttackStrategy());
             hitShipCoordinates = enemyBoard.TryHit(x, y);
         }
 

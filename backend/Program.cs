@@ -1,4 +1,5 @@
 using backend.Hubs;
+using backend.Models.Entity.Ships;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSignalR();
