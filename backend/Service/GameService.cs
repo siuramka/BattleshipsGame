@@ -5,7 +5,7 @@ namespace backend.Service;
 
 public class GameService
 {
-    public void AddShipToPlayer(Player player, SmallShip ship)
+    public void AddShipToPlayer(Player player, Ship ship)
     {
         var playerBoard = player.OwnBoard;
         playerBoard.AddShip(ship);
@@ -13,7 +13,21 @@ public class GameService
 
     public void CalculateShipCoordinates(Ship ship, int x, int y)
     {
-        //if small ship
-        ship.AddCoordinate(x, y);
+        int tempX = x;
+        int tempY = y;
+        int size = ship.Size;
+        bool isVertical = ship.IsVertical;
+
+        for (int i = 0; i < size; i++)
+        {
+            ship.AddCoordinate(tempX, tempY);
+            if (isVertical)
+            {
+                tempY++;
+            } else
+            {
+                tempX++;
+            }
+        }
     }
 }

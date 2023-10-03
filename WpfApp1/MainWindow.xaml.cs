@@ -1,4 +1,5 @@
-﻿using backend.Models.Entity.Ships;
+﻿using backend.Models.Entity;
+using backend.Models.Entity.Ships;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.VisualBasic;
 using Microsoft.Xaml.Behaviors;
@@ -18,7 +19,6 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Interaction = Microsoft.Xaml.Behaviors.Interaction;
-
 
 //// if you want to update UI state, you need to call your change in this
 /// as UI changes only allowed on the main thread, and this calls from the main thread. lol
@@ -41,12 +41,19 @@ namespace WpfApp1
     /// </summary>
     public partial class MainWindow : Window
     {
-        private string[] ContextMenuItems = { "Cruiser horizontal1x1" }; // change to classes
-        //private string[] ContextMenuItems = { "Cruiser horizontal1x1", "Submarine horizontal2x1",
-        //    "Destroyer horizontally3x1", "Battleship horizontally4x1", "Cruiser vertically1x1",
-        //    "Submarine vertically1x2", "Destroyer vertically1x3", "Battleship vertically1x4" };
-        private Button[,] MyButtons = new Button[10, 10];
-        private Button[,] EnemyButtons = new Button[10, 10];
+        private const int MAP_SIZE_X = 10;
+        private const int MAP_SIZE_Y = 10;
+        private static ShipFactory shipFactory = new ConcreteShipFactory();
+        private Ship[] Ships = { 
+            shipFactory.GetShip(ShipType.SmallShip), 
+            shipFactory.GetShip(ShipType.MediumShip),
+            shipFactory.GetShip(ShipType.BigShip),
+            shipFactory.GetShip(ShipType.SmallShip).SetVertical(),
+            shipFactory.GetShip(ShipType.MediumShip).SetVertical(),
+            shipFactory.GetShip(ShipType.BigShip).SetVertical(),
+        };
+        private Button[,] MyButtons = new Button[MAP_SIZE_X, MAP_SIZE_Y];
+        private Button[,] EnemyButtons = new Button[MAP_SIZE_X, MAP_SIZE_Y];
         private string gameState = ""; // change to class ?
         private HubConnection _connection;
         public MainWindow()
@@ -71,14 +78,19 @@ namespace WpfApp1
             if (myBoard)
             {
                 b.ContextMenu = new ContextMenu();
-                for (int i = 0; i < ContextMenuItems.Length; i++)
+                for (int i = 0; i < Ships.Length; i++)
                 {
-                    var tag = new int[] { x, y, (i % 4) + 1, i / 4 }; // change to classes
-                    var item = new MenuItem { Header = ContextMenuItems[i], Tag = tag }; // change to classes
+                    Ship ship = Ships[i];
+                    ArrangementDto tag = new ArrangementDto(ship, x, y);
+                    var item = new MenuItem { Header = ship.ToString(), Tag = tag };
                     this.Dispatcher.Invoke(() =>
                     {
                         item.Click += HandleShipArrangement;
-                        b.ContextMenu.Items.Add(item);
+                        if ((ship.IsVertical && y + ship.Size <= MAP_SIZE_Y) || 
+                            (!ship.IsVertical && x + ship.Size <= MAP_SIZE_X))
+                        {
+                            b.ContextMenu.Items.Add(item);
+                        }
                     });
                 }
                 this.Dispatcher.Invoke(() =>
@@ -106,9 +118,9 @@ namespace WpfApp1
             {
                 ShipAttacksBox.IsEnabled = true;
             });
-            for (int y = 0; y < 10; y++)
+            for (int y = 0; y < MAP_SIZE_Y; y++)
             {
-                for (int x = 0; x < 10; x++)
+                for (int x = 0; x < MAP_SIZE_X; x++)
                 {
                     var myButton = CreateButton(true, x, y);
                     var enemyButton = CreateButton(false, x, y);
@@ -144,7 +156,7 @@ namespace WpfApp1
             _connection.On<int, int, bool>("ReturnMove", HandleOnReturnMove);
             _connection.On<int, int, bool>("OpponentResult", HandleOnOpponentResult);
 
-            _connection.On<bool,int,int,int,bool>("SetupShipResponse", HandleOnSetShipResult); // need to add DTO or smt
+            _connection.On<bool, int, int, int, ShipType, bool>("SetupShipResponse", HandleOnSetShipResult); // need to add DTO or smt
 
         }
         private void HandleOnOpponentResult(int x, int y, bool hitMyShip)
@@ -232,40 +244,36 @@ namespace WpfApp1
         private void HandleShipArrangement(object sender, RoutedEventArgs e)
         {
             var b = sender as MenuItem;
-            int[] tag = b.Tag as int[];
-            int x = tag[0];
-            int y = tag[1];
-            int size = tag[2];
-            bool vertical = tag[3] == 1;
+            var tag = b.Tag as ArrangementDto;
 
-            _connection.SendAsync("AddShipToPlayer", size, x, y, vertical);
-            EnableMyBoard(false);
-
-        }
-        private void HandleShipAttacks(int size)
-        {
-            if (size == 1)
+            if (tag?.Ship == null)
             {
-                this.Dispatcher.Invoke(() =>
-                {
-                    ShipAttacksBox.Items.Add(new SmallShip());
-
-                });
-                this.Dispatcher.Invoke(() =>
-                {
-                    if (ShipAttacksBox.SelectedItem == null)
-                    {
-                        ShipAttacksBox.SelectedIndex = 0;
-                    }
-                });
-
+                return;
             }
+
+            _connection.SendAsync("AddShipToPlayer", tag.x, tag.y, tag.Ship.ShipType, tag.Ship.IsVertical);
+            EnableMyBoard(false);
         }
-        private void HandleOnSetShipResult(bool result, int x, int y, int size, bool vertical)
+        private void HandleShipAttacks(ShipType shipType)
+        {
+            ShipFactory shipFactory = new ConcreteShipFactory();
+            this.Dispatcher.Invoke(() =>
+            {
+                ShipAttacksBox.Items.Add(shipFactory.GetShip(shipType));
+            });
+            this.Dispatcher.Invoke(() =>
+            {
+                if (ShipAttacksBox.SelectedItem == null)
+                {
+                    ShipAttacksBox.SelectedIndex = 0;
+                }
+            });
+        }
+        private void HandleOnSetShipResult(bool result, int x, int y, int size, ShipType shipType, bool vertical)
         {
             if (result)
             {
-                HandleShipAttacks(size);
+                HandleShipAttacks(shipType);
                 if (vertical)
                 {
                     for (int i = y; i < y + size; i++)
@@ -338,9 +346,9 @@ namespace WpfApp1
             int x = tag[0];
             int y = tag[1];
 
-            SmallShip selectedAttackShip = (SmallShip)ShipAttacksBox.SelectedItem;
+            Ship selectedAttackShip = (Ship)ShipAttacksBox.SelectedItem;
 
-            _connection.SendAsync("MakeMove",x, y, selectedAttackShip);
+            _connection.SendAsync("MakeMove",x, y, selectedAttackShip.ShipType, selectedAttackShip.IsVertical);
             EnableEnemyBoard(false);
         }
     }

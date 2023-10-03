@@ -1,16 +1,18 @@
-﻿namespace backend.Models.Entity.Ships
+﻿using Shared;
+
+namespace backend.Models.Entity.Ships
 {
     public class ConcreteShipFactory : ShipFactory
     {
-        public override Ship GetShip(string Ship)
+        public override Ship GetShip(ShipType Ship)
         {
             switch (Ship)
             {
-                case "SmallShip":
+                case ShipType.SmallShip:
                     return new SmallShip();
-                case "MediumShip":
+                case ShipType.MediumShip:
                     return new MediumShip();
-                case "BigShip":
+                case ShipType.BigShip:
                     return new BigShip();
                 default:
                     throw new ApplicationException(string.Format("Ship '{0}' cannot be created", Ship));

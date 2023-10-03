@@ -13,42 +13,15 @@ namespace backend.Models.Entity.Ships
 
         public abstract IAttackStrategy GetAttackStrategy();
 
+        public Ship SetVertical()
+        {
+            IsVertical = true;
+            return this;
+        }
+
         public void AddCoordinate(int x, int y)
         {
-            if(Size == 1)
-            {
-                Coordinates.Add(new ShipCoordinate(x, y));
-            }
-            if(Size == 2)
-            {
-                if (IsVertical)
-                {
-                    Coordinates.Add(new ShipCoordinate(x, y));
-                    Coordinates.Add(new ShipCoordinate(x, y + 1));
-                } 
-                else
-                {
-                    Coordinates.Add(new ShipCoordinate(x, y));
-                    Coordinates.Add(new ShipCoordinate(x + 1, y));
-                }
-
-            }
-            if (Size == 3)
-            {
-                if (IsVertical)
-                {
-                    Coordinates.Add(new ShipCoordinate(x, y));
-                    Coordinates.Add(new ShipCoordinate(x, y + 1));
-                    Coordinates.Add(new ShipCoordinate(x, y + 2));
-                }
-                else
-                {
-                    Coordinates.Add(new ShipCoordinate(x, y));
-                    Coordinates.Add(new ShipCoordinate(x + 1, y));
-                    Coordinates.Add(new ShipCoordinate(x + 2, y));
-                }
-            }
-
+            Coordinates.Add(new ShipCoordinate(x, y));
         }
 
         public bool CanHitCoordinate(int x, int y)

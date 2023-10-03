@@ -18,9 +18,11 @@ public class GameHub : Hub
         _gameManager = GameManager.Instance; //singleton because each new connection creates new hub instance
 
     private GameService _gameService;
+    private ShipFactory shipFactory;
     public GameHub() : base()
     {
         _gameService = new();
+        shipFactory = new ConcreteShipFactory();
     }
 
     private class HitObject
@@ -62,31 +64,34 @@ public class GameHub : Hub
         await Clients.Group(gameId).SendAsync("SetupShips", ""); //send to frontend for players to setup ships
     }
     // _connection.SendAsync("SetShip", size, x, y, vertical);
-    public async Task AddShipToPlayer(int shipSize, int x, int y, bool isVerticalPlacement)
+    public async Task AddShipToPlayer(int x, int y, ShipType shipType, bool isVertical)
     {
         var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
         var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
-        if (currentPlayer == null || currentGame == null) return;
+        if (currentPlayer == null || currentGame == null)
+        {
+            return;
+        }
 
         //
         // add handling for ship placement on different size ships etc...
         //
-        Ship ship;
-
-        if (shipSize == 1)
+        Ship ship = shipFactory.GetShip(shipType);
+        if (isVertical)
         {
-            ship = new SmallShip();
-            _gameService.CalculateShipCoordinates(ship, x, y);
-            currentPlayer.OwnBoard.AddShip(ship);
+            ship.SetVertical();
         }
+        _gameService.CalculateShipCoordinates(ship, x, y);
+        currentPlayer.OwnBoard.AddShip(ship);
+
 
         if (x > 10 || y > 10)
         {
-            await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", false, -1, -1, 1, false); //send that cant place there
+            await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", false, -1, -1, 1, shipType, isVertical); //send that cant place there
         }
 
 
-        await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", true, x, y, shipSize, false);
+        await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", true, x, y, ship.Size, shipType, isVertical);
 
     }
     public async Task DoneShipSetup()
@@ -128,8 +133,14 @@ public class GameHub : Hub
         await Clients.Client(player.Id).SendAsync("ReturnEnterTestMode", ships);
     }
 
-    public async Task MakeMove(int x, int y, SmallShip ship)
+    public async Task MakeMove(int x, int y, ShipType shipType, bool isVertical)
     {
+        Ship ship = shipFactory.GetShip(shipType);
+        if (isVertical)
+        {
+            ship.SetVertical();
+        }
+
         var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
         var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
         var enemyPlayer = currentGame.GetEnemyPlayer(currentPlayer);
@@ -138,7 +149,7 @@ public class GameHub : Hub
 
         List<ShipCoordinate> hitShipCoordinates = new();
 
-        if (ship is SmallShip)
+        if (ship is Ship)
         {
             enemyBoard.SetEnemyAttackStrategy(ship.GetAttackStrategy());
             hitShipCoordinates = enemyBoard.TryHit(x, y);

@@ -2,6 +2,6 @@
 {
     public abstract class ShipFactory
     {
-        public abstract Ship GetShip(string Ship);
+        public abstract Ship GetShip(ShipType Ship);
     }
 }
