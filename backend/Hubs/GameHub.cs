@@ -155,10 +155,22 @@ public class GameHub : Hub
             hitShipCoordinates = enemyBoard.TryHit(x, y);
         }
 
+        // TODO: implement hit logic for bigger missiles
+        bool exists = false;
         foreach(var hitCoord in hitShipCoordinates)
         {
+            if (hitCoord.X == x && hitCoord.Y == y)
+            {
+                exists = true;
+            }
             await Clients.Client(currentPlayer.Id).SendAsync("ReturnMove", hitCoord.X, hitCoord.Y, true);//return to attacker if he hit ship or not
             await Clients.Client(enemyPlayer.Id).SendAsync("OpponentResult", hitCoord.X, hitCoord.Y, true);//return to who is getting attacked whenether or not his ship got hit
+        }
+
+        if (!exists)
+        {
+            await Clients.Client(currentPlayer.Id).SendAsync("ReturnMove", x, y, false);
+            await Clients.Client(enemyPlayer.Id).SendAsync("OpponentResult", x, y, false);
         }
 
 

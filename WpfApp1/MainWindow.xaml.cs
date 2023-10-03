@@ -162,43 +162,23 @@ namespace WpfApp1
         private void HandleOnOpponentResult(int x, int y, bool hitMyShip)
         {
             SendMessageToClient("ishit: " + hitMyShip);
-            if (hitMyShip)
-            {
-                SendMessageToClient("Enemy hit your ship!" + x + " " + y);
-                this.Dispatcher.Invoke(() =>
-                {
-                    MyButtons[y, x].Content = hitMyShip ? "X" : "O";
-                });
-            }
-            else
-            {
-                SendMessageToClient("Enemy missed!" + x + " " + y);
-                this.Dispatcher.Invoke(() =>
-                {
-                    MyButtons[y, x].Content = hitMyShip ? "X" : "O";
-                });
-            }           
+            string message = hitMyShip ? "Enemy hit your ship!" + x + " " + y : "Enemy missed!" + x + " " + y;
+            SendMessageToClient(message);
+            this.Dispatcher.Invoke(() => {
+                Button button = MyButtons[y, x];
+                button.Content = hitMyShip ? "X" : "O";
+                button.Style = (Style)Resources[hitMyShip ? "HitButton" : "NotHitButton"];
+            });   
         }
-
-
         private void HandleOnReturnMove(int x, int y, bool hitEnemyShip)
         {
-            if (hitEnemyShip)
-            {
-                SendMessageToClient("You hit enemy ship!" + x + " " + y);
-                this.Dispatcher.Invoke(() =>
-                {
-                    EnemyButtons[y, x].Content = hitEnemyShip ? "X" : "O";
-                });
-            }
-            else
-            {
-                SendMessageToClient("You missed enemy ship!" + x + " " + y);
-                this.Dispatcher.Invoke(() =>
-                {
-                    MyButtons[y, x].Content = hitEnemyShip ? "X" : "O";
-                });
-            }
+            string message = hitEnemyShip ? "You hit enemy ship!" + x + " " + y : "You missed enemy ship!" + x + " " + y;
+            SendMessageToClient(message);
+            this.Dispatcher.Invoke(() => {
+                Button button = EnemyButtons[y, x];
+                button.Content = hitEnemyShip ? "X" : "O";
+                button.Style = (Style)Resources[hitEnemyShip ? "HitButton" : "NotHitButton"];
+            });
         }
         private void SendMessageToClient(string message)
         {

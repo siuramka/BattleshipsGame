@@ -1,4 +1,6 @@
-﻿namespace backend.Models.Entity.Ships
+﻿using Shared;
+
+namespace backend.Models.Entity.Ships
 {
     public abstract class ShipFactory
     {
