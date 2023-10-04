@@ -1,25 +1,26 @@
 ﻿using backend.Models.Entity.Ships;
+using Shared;
 
 namespace backend.Strategies.Ships
 {
     public class SmallShipAttackStrategy : IAttackStrategy
     {
-        public List<ShipCoordinate> TargetShip(int x, int y, List<Ship> battleships, List<ShipCoordinate> missedCoordinates)
+
+        public List<ShipCoordinate> TargetShip(int x, int y, List<Ship> battleships, List<ShipCoordinate> missedCoordinates, BombType attackBomb, Ship enemyAttackShip)
         {
             List<ShipCoordinate> hitCoordinates = new();
-            foreach (var battleship in battleships)
+
+            if(attackBomb == BombType.MissileBomb)
             {
-                if (battleship.CanHitCoordinate(x, y))
-                {
-                    battleship.HitCoordinate(x, y);
-                    hitCoordinates.Add(new ShipCoordinate(x, y));
-                }
-                else
-                {
-                    missedCoordinates.Add(new ShipCoordinate(x, y));
-                }
+                var bomb = enemyAttackShip.GetShipBombFactory().CreateMissileBomb();
             }
-            
+            else if (attackBomb == BombType.AtomicBomb)
+            {
+                var bomb = enemyAttackShip.GetShipBombFactory().CreateAtomicBomb();
+                bomb.CalculateCoordinate(x, y);
+            }
+
+
             return hitCoordinates;
         }
     }

@@ -1,5 +1,6 @@
 ﻿using backend.Manager;
 using backend.Models.Entity;
+using backend.Models.Entity.Bombs;
 using backend.Models.Entity.Ships;
 using backend.Service;
 using backend.Strategies.Ships;
@@ -153,11 +154,11 @@ public class GameHub : Hub
 
         List<ShipCoordinate> hitShipCoordinates = new();
 
-        if (ship is Ship)
-        {
-            enemyBoard.SetEnemyAttackStrategy(ship.GetAttackStrategy());
-            hitShipCoordinates = enemyBoard.TryHit(move.X, move.Y);
-        }
+        var shipBombFactory = ship.GetShipBombFactory();
+
+
+        enemyBoard.SetEnemyAttackShip(ship);
+        hitShipCoordinates = enemyBoard.TryHit(move.X, move.Y, move.AttackBomb);
 
         // TODO: implement hit logic for bigger missiles
         bool exists = false;
