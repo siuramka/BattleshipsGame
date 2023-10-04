@@ -176,7 +176,8 @@ public class GameHub : Hub
 
         if (enemyBoard.HaveAllShipsSunk) // if all enemy ships have sunk
         {
-            await Clients.Group(currentGame.Group.Id).SendAsync("GameOver", new { WinnerPlayerName = enemyPlayer.Name, WinnerPlayerConnectionId = Context.ConnectionId }); // send to players that game is over and send winner name
+            await Clients.Client(currentPlayer.Id).SendAsync("GameOver", true); // send to players that game is over and send winner name
+            await Clients.Client(enemyPlayer.Id).SendAsync("GameOver", false); // send to players that game is over and send winner name
             return;
         }
 

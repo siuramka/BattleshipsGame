@@ -158,7 +158,19 @@ namespace WpfApp1
 
             _connection.On<bool, int, int, int, ShipType, bool>("SetupShipResponse", HandleOnSetShipResult); // need to add DTO or smt
 
+            _connection.On<bool>("GameOver", HandleOnGameOver);
         }
+
+        private void HandleOnGameOver(bool hasWonGame)
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                var newWindow = new GameOverForm(hasWonGame);
+                newWindow.Show();
+                this.Close();
+            });
+        }
+
         private void HandleOnOpponentResult(int x, int y, bool hitMyShip)
         {
             SendMessageToClient("ishit: " + hitMyShip);
