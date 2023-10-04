@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.VisualBasic;
 using Microsoft.Xaml.Behaviors;
 using Shared;
+using Shared.Transfer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -156,7 +157,7 @@ namespace WpfApp1
             _connection.On<int, int, bool>("ReturnMove", HandleOnReturnMove);
             _connection.On<int, int, bool>("OpponentResult", HandleOnOpponentResult);
 
-            _connection.On<bool, int, int, int, ShipType, bool>("SetupShipResponse", HandleOnSetShipResult); // need to add DTO or smt
+            _connection.On<SetupShipResponse>("SetupShipResponse", HandleOnSetShipResult); // need to add DTO or smt
 
             _connection.On<bool>("GameOver", HandleOnGameOver);
         }
@@ -261,29 +262,29 @@ namespace WpfApp1
                 }
             });
         }
-        private void HandleOnSetShipResult(bool result, int x, int y, int size, ShipType shipType, bool vertical)
+        private void HandleOnSetShipResult(SetupShipResponse setupShipResponse)
         {
-            if (result)
+            if (setupShipResponse.CanPlace)
             {
-                HandleShipAttacks(shipType);
-                if (vertical)
+                HandleShipAttacks(setupShipResponse.TypeOfShip);
+                if (setupShipResponse.IsVertical)
                 {
-                    for (int i = y; i < y + size; i++)
+                    for (int i = setupShipResponse.Y; i < setupShipResponse.Y + setupShipResponse.ShipSize; i++)
                     {
                         this.Dispatcher.Invoke(() =>
                         {
 
-                            MyButtons[i, x].Content = "#";
+                            MyButtons[i, setupShipResponse.X].Content = "#";
                         });
                     }
                 }
                 else
                 {
-                    for (int i = x; i < x + size; i++)
+                    for (int i = setupShipResponse.X; i < setupShipResponse.X + setupShipResponse.ShipSize; i++)
                     {
                         this.Dispatcher.Invoke(() =>
                         {
-                            MyButtons[y, i].Content = "#";
+                            MyButtons[setupShipResponse.Y, i].Content = "#";
 
                         });
                     }

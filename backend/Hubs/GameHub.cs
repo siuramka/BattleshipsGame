@@ -5,6 +5,7 @@ using backend.Service;
 using backend.Strategies.Ships;
 using Microsoft.AspNetCore.SignalR;
 using Shared;
+using Shared.Transfer;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -87,11 +88,11 @@ public class GameHub : Hub
 
         if (x > 10 || y > 10)
         {
-            await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", false, -1, -1, 1, shipType, isVertical); //send that cant place there
+            await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", new SetupShipResponse(false, -1, -1, 1, shipType, isVertical)); //send that cant place there
         }
 
 
-        await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", true, x, y, ship.Size, shipType, isVertical);
+        await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", new SetupShipResponse(true, x, y, ship.Size, shipType, isVertical));
 
     }
     public async Task DoneShipSetup()
