@@ -18,7 +18,7 @@ namespace backend.Models.Entity.Ships
 
         public override IAttackStrategy GetAttackStrategy()
         {
-            return new MediumShipAttackStrategy();
+            return new MediumBombAttackStrategy();
         }
 
         public override BombFactory GetShipBombFactory()

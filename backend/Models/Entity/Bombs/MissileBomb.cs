@@ -11,7 +11,5 @@ namespace backend.Models.Entity.Bombs
         public abstract int Size { get; }
 
         public abstract Orientation OrientationOf { get; }
-
-        public abstract List<ShipCoordinate> CalculateCoordinate(int x, int y);
     }
 }

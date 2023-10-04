@@ -9,7 +9,5 @@ namespace backend.Models.Entity.Bombs
     {
         public abstract int horizontal { get; }
         public abstract int vertical { get; }
-
-        public abstract List<ShipCoordinate> CalculateCoordinate(int x, int y);
     }
 }

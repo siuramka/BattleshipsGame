@@ -17,7 +17,7 @@ public class SmallShip : Ship
 
     public override IAttackStrategy GetAttackStrategy()
     {
-        return new SmallShipAttackStrategy();
+        return new SmallBombAttackStrategy();
     }
 
     public override BombFactory GetShipBombFactory()

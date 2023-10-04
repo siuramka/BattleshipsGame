@@ -271,8 +271,8 @@ namespace WpfApp1
         {
             this.Dispatcher.Invoke(() =>
             {
-                BombAttackBox.Items.Add(BombType.MissileBomb);
-                BombAttackBox.Items.Add(BombType.AtomicBomb);
+                BombAttackBox.Items.Add("Missile");
+                BombAttackBox.Items.Add("Atomic");
             });
             this.Dispatcher.Invoke(() =>
             {
@@ -360,7 +360,9 @@ namespace WpfApp1
             int y = tag[1];
 
             Ship selectedAttackShip = (Ship)ShipAttacksBox.SelectedItem;
-            BombType selectedBombType = (BombType)BombAttackBox.SelectedItem;
+            string selectedBomb = BombAttackBox.SelectedItem.ToString();
+
+            Enum.TryParse<BombType>(selectedBomb, out var selectedBombType);
 
             _connection.SendAsync("MakeMove",new MakeMove(x, y, selectedAttackShip.ShipType, selectedAttackShip.IsVertical, selectedBombType));
             EnableEnemyBoard(false);
