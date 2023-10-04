@@ -3,6 +3,7 @@ using backend.Models.Entity;
 using backend.Models.Entity.Ships;
 using backend.Service;
 using backend.Strategies.Ships;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.SignalR;
 using Shared;
 using Shared.Transfer;
@@ -134,10 +135,12 @@ public class GameHub : Hub
         await Clients.Client(player.Id).SendAsync("ReturnEnterTestMode", ships);
     }
 
-    public async Task MakeMove(int x, int y, ShipType shipType, bool isVertical)
+    //public async Task MakeMove(int x, int y, ShipType shipType, bool isVertical)
+    public async Task MakeMove(MakeMove move)
+
     {
-        Ship ship = shipFactory.GetShip(shipType);
-        if (isVertical)
+        Ship ship = shipFactory.GetShip(move.TypeOfShip);
+        if (move.IsVertical)
         {
             ship.SetVertical();
         }
@@ -153,14 +156,14 @@ public class GameHub : Hub
         if (ship is Ship)
         {
             enemyBoard.SetEnemyAttackStrategy(ship.GetAttackStrategy());
-            hitShipCoordinates = enemyBoard.TryHit(x, y);
+            hitShipCoordinates = enemyBoard.TryHit(move.X, move.Y);
         }
 
         // TODO: implement hit logic for bigger missiles
         bool exists = false;
         foreach(var hitCoord in hitShipCoordinates)
         {
-            if (hitCoord.X == x && hitCoord.Y == y)
+            if (hitCoord.X == move.X && hitCoord.Y == move.Y)
             {
                 exists = true;
             }
@@ -170,8 +173,8 @@ public class GameHub : Hub
 
         if (!exists)
         {
-            await Clients.Client(currentPlayer.Id).SendAsync("ReturnMove", new MoveResult(x, y, false));
-            await Clients.Client(enemyPlayer.Id).SendAsync("OpponentResult", new MoveResult( x, y, false));
+            await Clients.Client(currentPlayer.Id).SendAsync("ReturnMove", new MoveResult(move.X, move.Y, false));
+            await Clients.Client(enemyPlayer.Id).SendAsync("OpponentResult", new MoveResult(move.X, move.Y, false));
         }
 
 

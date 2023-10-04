@@ -340,7 +340,7 @@ namespace WpfApp1
 
             Ship selectedAttackShip = (Ship)ShipAttacksBox.SelectedItem;
 
-            _connection.SendAsync("MakeMove",x, y, selectedAttackShip.ShipType, selectedAttackShip.IsVertical);
+            _connection.SendAsync("MakeMove",new MakeMove(x, y, selectedAttackShip.ShipType, selectedAttackShip.IsVertical));
             EnableEnemyBoard(false);
         }
     }
