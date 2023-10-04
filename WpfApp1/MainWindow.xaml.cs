@@ -55,6 +55,7 @@ namespace WpfApp1
         };
         private Button[,] MyButtons = new Button[MAP_SIZE_X, MAP_SIZE_Y];
         private Button[,] EnemyButtons = new Button[MAP_SIZE_X, MAP_SIZE_Y];
+        private Dictionary<int, Style> EnemeyBoardStyles = new Dictionary<int, Style>(); // TODO: use momento design pattern
         private string gameState = ""; // change to class ?
         private HubConnection _connection;
         public MainWindow()
@@ -71,6 +72,9 @@ namespace WpfApp1
         private Button CreateButton(bool myBoard, int x, int y)
         {
             Button b = new Button();
+
+            EnemeyBoardStyles.TryAdd(x * 10 + y, new Style()) ;
+
             this.Dispatcher.Invoke(() =>
             {
                 b.IsEnabled = false;
@@ -102,13 +106,13 @@ namespace WpfApp1
             }
             else
             {
-
-                b.Tag = new int[2] { x, y };
                 this.Dispatcher.Invoke(() =>
                 {
+                    b.Tag = new int[2] { x, y };
+                    b.MouseEnter += HandleMouseEnter;
+                    b.MouseLeave += HandleMouseLeave;
                     b.Click += HandleShot;
                 });
-
             }
 
             return b;
@@ -189,7 +193,9 @@ namespace WpfApp1
             this.Dispatcher.Invoke(() => {
                 Button button = EnemyButtons[moveResult.Y, moveResult.X];
                 button.Content = moveResult.IsHit ? "X" : "O";
-                button.Style = (Style)Resources[moveResult.IsHit ? "HitButton" : "NotHitButton"];
+                Style newStyle = (Style)Resources[moveResult.IsHit ? "HitButton" : "NotHitButton"];
+                EnemeyBoardStyles[moveResult.X * 10 + moveResult.Y] = newStyle;
+                button.Style = newStyle;
             });
         }
         private void SendMessageToClient(string message)
@@ -197,7 +203,6 @@ namespace WpfApp1
             this.Dispatcher.Invoke(() =>
             {
                 MessagesListbox.Items.Add(message);
-
             });
         }
         private void HandleOnPlayerTurn(string _)
@@ -342,6 +347,39 @@ namespace WpfApp1
 
             _connection.SendAsync("MakeMove",new MakeMove(x, y, selectedAttackShip.ShipType, selectedAttackShip.IsVertical));
             EnableEnemyBoard(false);
+        }
+
+        private void HandleMouseEnter(object sender, RoutedEventArgs e)
+        {
+            var button = (Button)sender;
+            int[] tag = button.Tag as int[];
+            int x = tag[0];
+            int y = tag[1];
+
+            // TODO: Implement bomb size logic
+            //if (x + 1 < 10 && EnemyButtons[y, x + 1] != null)
+            //{
+            //    EnemyButtons[y, x + 1].Style = (Style)Resources["HoveredButton"];
+            //}
+
+            button.Style = (Style)Resources["HoveredButton"];
+        }
+
+        private void HandleMouseLeave(object sender, RoutedEventArgs e)
+        {
+            var button = (Button)sender;
+            int[] tag = button.Tag as int[];
+            int x = tag[0];
+            int y = tag[1];
+
+            EnemeyBoardStyles.TryGetValue(x * 10 + y, out var style);
+            button.Style = style;
+
+            // TODO: Implement bomb size logic
+            //if (x + 1 < 10 && EnemyButtons[y, x + 1] != null)
+            //{
+            //    EnemyButtons[y, x + 1].Style = style;
+            //}
         }
     }
 }
