@@ -154,8 +154,8 @@ namespace WpfApp1
             _connection.On<string>("GameStarted", HandleOnGameStarted);
             _connection.On<string>("YourTurn", HandleOnPlayerTurn);
             //attacks
-            _connection.On<int, int, bool>("ReturnMove", HandleOnReturnMove);
-            _connection.On<int, int, bool>("OpponentResult", HandleOnOpponentResult);
+            _connection.On<MoveResult>("ReturnMove", HandleOnReturnMove);
+            _connection.On<MoveResult>("OpponentResult", HandleOnOpponentResult);
 
             _connection.On<SetupShipResponse>("SetupShipResponse", HandleOnSetShipResult); // need to add DTO or smt
 
@@ -172,25 +172,24 @@ namespace WpfApp1
             });
         }
 
-        private void HandleOnOpponentResult(int x, int y, bool hitMyShip)
+        private void HandleOnOpponentResult(MoveResult moveResult)
         {
-            SendMessageToClient("ishit: " + hitMyShip);
-            string message = hitMyShip ? "Enemy hit your ship!" + x + " " + y : "Enemy missed!" + x + " " + y;
+            string message = moveResult.IsHit ? "Enemy hit your ship!" + moveResult.X + " " + moveResult.Y : "Enemy missed!" + moveResult.X + " " + moveResult.Y;
             SendMessageToClient(message);
             this.Dispatcher.Invoke(() => {
-                Button button = MyButtons[y, x];
-                button.Content = hitMyShip ? "X" : "O";
-                button.Style = (Style)Resources[hitMyShip ? "HitButton" : "NotHitButton"];
+                Button button = MyButtons[moveResult.Y, moveResult.X];
+                button.Content = moveResult.IsHit? "X" : "O";
+                button.Style = (Style)Resources[moveResult.IsHit ? "HitButton" : "NotHitButton"];
             });   
         }
-        private void HandleOnReturnMove(int x, int y, bool hitEnemyShip)
+        private void HandleOnReturnMove(MoveResult moveResult)
         {
-            string message = hitEnemyShip ? "You hit enemy ship!" + x + " " + y : "You missed enemy ship!" + x + " " + y;
+            string message = moveResult.IsHit ? "You hit enemy ship!" + moveResult.X + " " + moveResult.Y : "You missed enemy ship!" + moveResult.X + " " + moveResult.Y;
             SendMessageToClient(message);
             this.Dispatcher.Invoke(() => {
-                Button button = EnemyButtons[y, x];
-                button.Content = hitEnemyShip ? "X" : "O";
-                button.Style = (Style)Resources[hitEnemyShip ? "HitButton" : "NotHitButton"];
+                Button button = EnemyButtons[moveResult.Y, moveResult.X];
+                button.Content = moveResult.IsHit ? "X" : "O";
+                button.Style = (Style)Resources[moveResult.IsHit ? "HitButton" : "NotHitButton"];
             });
         }
         private void SendMessageToClient(string message)

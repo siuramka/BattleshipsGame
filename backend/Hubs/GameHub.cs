@@ -164,14 +164,14 @@ public class GameHub : Hub
             {
                 exists = true;
             }
-            await Clients.Client(currentPlayer.Id).SendAsync("ReturnMove", hitCoord.X, hitCoord.Y, true);//return to attacker if he hit ship or not
-            await Clients.Client(enemyPlayer.Id).SendAsync("OpponentResult", hitCoord.X, hitCoord.Y, true);//return to who is getting attacked whenether or not his ship got hit
+            await Clients.Client(currentPlayer.Id).SendAsync("ReturnMove", new MoveResult(hitCoord.X, hitCoord.Y, true));//return to attacker if he hit ship or not
+            await Clients.Client(enemyPlayer.Id).SendAsync("OpponentResult", new MoveResult(hitCoord.X, hitCoord.Y, true));//return to who is getting attacked whenether or not his ship got hit
         }
 
         if (!exists)
         {
-            await Clients.Client(currentPlayer.Id).SendAsync("ReturnMove", x, y, false);
-            await Clients.Client(enemyPlayer.Id).SendAsync("OpponentResult", x, y, false);
+            await Clients.Client(currentPlayer.Id).SendAsync("ReturnMove", new MoveResult(x, y, false));
+            await Clients.Client(enemyPlayer.Id).SendAsync("OpponentResult", new MoveResult( x, y, false));
         }
 
 
