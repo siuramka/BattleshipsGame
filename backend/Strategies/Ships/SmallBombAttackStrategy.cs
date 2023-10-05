@@ -12,7 +12,7 @@ namespace backend.Strategies.Ships
         {
             List<ShipCoordinate> coordinates = new List<ShipCoordinate>();
 
-            coordinates.Add(new ShipCoordinate(x, y));
+            coordinates.Add(new ShipCoordinate(x, y)); // 1x1
 
             return coordinates;
         }
@@ -20,13 +20,12 @@ namespace backend.Strategies.Ships
         public List<ShipCoordinate> TargetShip(int x, int y, AtomicBomb smallAtomicBomb)
         {
             List<ShipCoordinate> coordinates = new List<ShipCoordinate>();
-
-            for (int i = 0; i < smallAtomicBomb.horizontal; i++)
+            for (int i = 0; i < smallAtomicBomb.Horizontal; i++)
             {
-                for (int j = 0; j < smallAtomicBomb.vertical; j++)
+                for (int j = 0; j < smallAtomicBomb.Vertical; j++)
                 {
-                    int newX = x + i;
-                    int newY = y + j;
+                    int newX = x - 1 + i;
+                    int newY = y - 1 + j;
                     coordinates.Add(new ShipCoordinate(newX, newY));
                 }
             }

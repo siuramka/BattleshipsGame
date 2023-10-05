@@ -1,5 +1,6 @@
 ﻿using backend.Models.Entity;
 using backend.Models.Entity.Ships;
+using backend.Models.Entity.Ships.Factory;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.VisualBasic;
 using Microsoft.Xaml.Behaviors;

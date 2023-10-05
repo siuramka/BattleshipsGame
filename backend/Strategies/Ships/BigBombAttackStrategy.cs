@@ -13,23 +13,23 @@ namespace backend.Strategies.Ships
 
             for (int i = 0; i < bigMissileBomb.Size; i++)
             {
-                int newX = x + i;
+                int newX = x - 1 + i;
                 coordinates.Add(new ShipCoordinate(newX, y));
             }
 
             return coordinates;
         }
 
-        public List<ShipCoordinate> TargetShip(int x, int y,  AtomicBomb bigAtomicBomb)
+        public List<ShipCoordinate> TargetShip(int x, int y, AtomicBomb bigAtomicBomb)
         {
             List<ShipCoordinate> coordinates = new List<ShipCoordinate>();
 
-            for (int i = 0; i < bigAtomicBomb.horizontal; i++)
+            for (int i = 0; i < bigAtomicBomb.Horizontal; i++)
             {
-                for (int j = 0; j < bigAtomicBomb.vertical; j++)
+                for (int j = 0; j < bigAtomicBomb.Vertical; j++)
                 {
-                    int newX = x + i;
-                    int newY = y + j;
+                    int newX = x - 1 + i;
+                    int newY = y - 1 + j;
                     coordinates.Add(new ShipCoordinate(newX, newY));
                 }
             }

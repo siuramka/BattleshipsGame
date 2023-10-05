@@ -7,7 +7,7 @@ namespace backend.Models.Entity.Bombs
     /// </summary>
     public abstract class AtomicBomb
     {
-        public abstract int horizontal { get; }
-        public abstract int vertical { get; }
+        public abstract int Horizontal { get; }
+        public abstract int Vertical { get; }
     }
 }

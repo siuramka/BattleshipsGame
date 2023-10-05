@@ -9,7 +9,7 @@ namespace backend.Models.Entity;
 public class GameBoard
 {
     private List<Ship> _battleships = new();
-    private List<ShipCoordinate> _missedCoordinates = new();
+    private HashSet<ShipCoordinate> _missedCoordinates = new();
     private Ship? _enemyAttackShip;
 
     private int maxSizeX = 10;
@@ -39,26 +39,36 @@ public class GameBoard
     }
     public List<ShipCoordinate> GetHitCoordinates(int x, int y, BombType attackBomb)
     {
-        List<ShipCoordinate> hitableCordinates = GetHitableCordinates(x, y, attackBomb);
+        List<ShipCoordinate> hitableCoordinates = GetHitableCordinates(x, y, attackBomb);
+        List<ShipCoordinate> hitShipCoordinates = new List<ShipCoordinate>();
 
-        List<ShipCoordinate> hitShipCoordinates = new();
 
         foreach (var ship in _battleships)
         {
-            bool canTargetCoordinate = hitableCordinates.Any(cord => cord.X == x && cord.Y == y);
-            if (ship.CanHitCoordinate(x, y) && canTargetCoordinate)
+            foreach (var hitableCoord in hitableCoordinates)
             {
-                ship.HitCoordinate(x, y);
-                hitShipCoordinates.Add(new ShipCoordinate(x, y));
-            }
-            else
-            {
-                _missedCoordinates.Add(new ShipCoordinate(x, y));
+                if (ship.CanHitCoordinate(hitableCoord.X, hitableCoord.Y))
+                {
+                    ship.HitCoordinate(hitableCoord.X, hitableCoord.Y);
+                    hitShipCoordinates.Add(hitableCoord);
+                }
+                else
+                {
+                    _missedCoordinates.Add(hitableCoord);
+                }
             }
         }
 
-        return hitShipCoordinates;
+        foreach(var miss in _missedCoordinates)
+        {
+            if (hitShipCoordinates.Contains(miss))
+            {
+                _missedCoordinates.Remove(miss);
+            }
+        }
 
+
+        return hitShipCoordinates;
     }
     private List<ShipCoordinate> GetHitableCordinates(int x, int y, BombType attackBomb)
     {

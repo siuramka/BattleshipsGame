@@ -2,6 +2,7 @@
 using backend.Models.Entity;
 using backend.Models.Entity.Bombs;
 using backend.Models.Entity.Ships;
+using backend.Models.Entity.Ships.Factory;
 using backend.Service;
 using backend.Strategies.Ships;
 using Microsoft.AspNetCore.Mvc.ModelBinding;

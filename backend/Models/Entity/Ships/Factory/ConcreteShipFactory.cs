@@ -1,6 +1,6 @@
 ﻿using Shared;
 
-namespace backend.Models.Entity.Ships
+namespace backend.Models.Entity.Ships.Factory
 {
     public class ConcreteShipFactory : ShipFactory
     {
