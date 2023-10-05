@@ -272,8 +272,8 @@ namespace WpfApp1
         {
             this.Dispatcher.Invoke(() =>
             {
-                BombAttackBox.Items.Add("Missile");
-                BombAttackBox.Items.Add("Atomic");
+                BombAttackBox.Items.Add(BombType.MissileBomb); // type index needs to be same as Items index :D
+                BombAttackBox.Items.Add(BombType.AtomicBomb);
             });
             this.Dispatcher.Invoke(() =>
             {
@@ -361,11 +361,10 @@ namespace WpfApp1
             int y = tag[1];
 
             Ship selectedAttackShip = (Ship)ShipAttacksBox.SelectedItem;
-            string selectedBomb = BombAttackBox.SelectedItem.ToString();
+            BombType selectedBomb = (BombType)BombAttackBox.SelectedItem;
 
-            Enum.TryParse<BombType>(selectedBomb, out var selectedBombType);
 
-            _connection.SendAsync("MakeMove",new MakeMove(x, y, selectedAttackShip.ShipType, selectedAttackShip.IsVertical, selectedBombType));
+            _connection.SendAsync("MakeMove",new MakeMove(x, y, selectedAttackShip.ShipType, selectedAttackShip.IsVertical, selectedBomb));
             EnableEnemyBoard(false);
         }
     }
