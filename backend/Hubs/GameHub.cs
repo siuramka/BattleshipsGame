@@ -87,7 +87,7 @@ public class GameHub : Hub
         currentPlayer.OwnBoard.AddShip(ship);
 
 
-        if (x > 10 || y > 10)
+        if (checkIfShipDoesNotFit(ship))
         {
             await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", new SetupShipResponse(false, -1, -1, 1, shipType, isVertical)); //send that cant place there
         }
@@ -95,6 +95,18 @@ public class GameHub : Hub
 
         await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", new SetupShipResponse(true, x, y, ship.Size, shipType, isVertical));
 
+    }
+
+    private bool checkIfShipDoesNotFit(Ship ship)
+    {
+        foreach (ShipCoordinate coord in ship.Coordinates)
+        {
+            if(coord.X > 10 || coord.Y > 10)
+            {
+                return true;
+            }
+        }
+        return false;
     }
     public async Task DoneShipSetup()
     {
