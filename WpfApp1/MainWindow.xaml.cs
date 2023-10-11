@@ -215,6 +215,10 @@ namespace WpfApp1
         {
             gameState = "gameStarted";
             SendMessageToClient("Game started");
+            this.Dispatcher.Invoke(() =>
+            {
+                TestModeButton.IsEnabled = true;
+            });
         }
 
         private void HandleOnWaitingForOpponent(string username)
@@ -387,10 +391,16 @@ namespace WpfApp1
         {
             this.Dispatcher.Invoke(() =>
             {
-                var newWindow = new TestModeWindow();
+                var newWindow = new TestModeWindow(_connection);
                 newWindow.Show();
+                newWindow.Closed += TestClosed;
                 TestModeButton.IsEnabled = false;
             });
+        }
+
+        private void TestClosed(object ?sender, EventArgs e)
+        {
+            TestModeButton.IsEnabled = true;
         }
     }
 }

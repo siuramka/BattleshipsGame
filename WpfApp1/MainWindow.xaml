@@ -6,6 +6,9 @@
         xmlns:local="clr-namespace:WpfApp1"
         mc:Ignorable="d"
         Title="Battleships" Height="468" Width="1100" ResizeMode="CanMinimize">
+    <Window.Background>
+        <SolidColorBrush Color="LightGray" />
+    </Window.Background>
     <Window.Resources>
         <Style x:Key="HitButton" TargetType="Button">
             <Setter Property="Background" Value="red"/>
@@ -192,7 +195,7 @@
             <Rectangle Grid.Column="0" Grid.RowSpan="1000">
                 <Rectangle.Fill>
                     <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                        <GradientStop Color="#FF83FF97" Offset="0" />
+                        <GradientStop Color="#FF6961" Offset="0" />
                         <GradientStop Color="White" Offset="1" />
                     </LinearGradientBrush>
                 </Rectangle.Fill>
@@ -200,7 +203,7 @@
             <Rectangle Grid.Column="0" Grid.ColumnSpan="1000">
                 <Rectangle.Fill>
                     <LinearGradientBrush EndPoint="1,1" StartPoint="0,0.7">
-                        <GradientStop Color="#FF83FF97" Offset="0" />
+                        <GradientStop Color="#FF6961" Offset="0" />
                         <GradientStop Color="White" Offset="1" />
                     </LinearGradientBrush>
                 </Rectangle.Fill>
@@ -231,6 +234,6 @@
         <TextBlock x:Name="UserName" Grid.Column="2" HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="22" Width="236"><Run Language="lt-lt" Text="Username"/></TextBlock>
         <ComboBox x:Name="ShipAttacksBox" Margin="7,358,9,30" Grid.Column="2" IsEnabled="False">
         </ComboBox>
-        <Button x:Name="TestModeButton" Grid.Column="2" Content="Test Mode" Margin="138,0,10,5" VerticalAlignment="Bottom" IsEnabled="True" Click="TestMode" x:FieldModifier="public"/>
+        <Button x:Name="TestModeButton" Grid.Column="2" Content="Test Mode" Margin="138,0,10,5" VerticalAlignment="Bottom" IsEnabled="False" Click="TestMode" x:FieldModifier="public"/>
     </Grid>
 </Window>

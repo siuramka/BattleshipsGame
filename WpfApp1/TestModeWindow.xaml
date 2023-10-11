@@ -5,9 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApp1"
         mc:Ignorable="d"
-        Title="TestModeWindow" Height="450" Width="325">
+        Title="TestModeWindow" Height="459" Width="341">
+    <Window.Background>
+        <SolidColorBrush Color="LightGray" />
+    </Window.Background>
     <Grid Margin="0,0,10,0">
-        <Grid x:Name="MyBoard" HorizontalAlignment="Left" Width="300" Margin="10,10,0,7">
+        <Grid x:Name="TestBoard" HorizontalAlignment="Left" Width="300" Margin="10,10,0,7">
             <Grid.RowDefinitions>
                 <RowDefinition/>
                 <RowDefinition/>
@@ -34,6 +37,22 @@
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
+            <Rectangle Grid.Column="0" Grid.RowSpan="1000">
+                <Rectangle.Fill>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="#FDFD96" Offset="0" />
+                        <GradientStop Color="White" Offset="1" />
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Rectangle Grid.Column="0" Grid.ColumnSpan="1000">
+                <Rectangle.Fill>
+                    <LinearGradientBrush EndPoint="1,1" StartPoint="0,0.7">
+                        <GradientStop Color="#FDFD96" Offset="0" />
+                        <GradientStop Color="White" Offset="1" />
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
             <Label Content="A" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             <Label Content="B" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             <Label Content="C" Grid.Column="3" HorizontalAlignment="Center" VerticalAlignment="Center"/>

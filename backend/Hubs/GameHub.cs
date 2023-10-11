@@ -139,10 +139,19 @@ public class GameHub : Hub
         var enemyPlayer = currentGame.GetEnemyPlayer(currentPlayer);
         var enemyShips = enemyPlayer.OwnBoard.GetShips();
 
-        await SendTestModeShips(currentPlayer, enemyShips);
+        List<ShipCoordinate> shipCoordinates = new List<ShipCoordinate>();
+        foreach (var ship in enemyShips)
+        {
+            foreach(var shipCoordinate in ship.Coordinates)
+            {
+                shipCoordinates.Add(shipCoordinate);
+            }
+        }
+
+        await SendTestModeShips(currentPlayer, new List<ShipCoordinate>(shipCoordinates));
     }
 
-    private async Task SendTestModeShips(Player player, List<Ship> ships)
+    private async Task SendTestModeShips(Player player, List<ShipCoordinate> ships)
     {
         await Clients.Client(player.Id).SendAsync("ReturnEnterTestMode", ships);
     }
