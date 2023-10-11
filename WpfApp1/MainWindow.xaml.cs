@@ -331,6 +331,7 @@ namespace WpfApp1
             ActionButton.IsEnabled = false;
         }
 
+
         private void HandleShot(object sender, RoutedEventArgs e)
         {
             var button = (Button)sender;
@@ -342,6 +343,16 @@ namespace WpfApp1
 
             _connection.SendAsync("MakeMove",new MakeMove(x, y, selectedAttackShip.ShipType, selectedAttackShip.IsVertical));
             EnableEnemyBoard(false);
+        }
+
+        private void TestMode(object sender, RoutedEventArgs e)
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                var newWindow = new TestModeWindow();
+                newWindow.Show();
+                TestModeButton.IsEnabled = false;
+            });
         }
     }
 }
