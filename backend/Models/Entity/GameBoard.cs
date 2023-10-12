@@ -47,7 +47,7 @@ public class GameBoard
         {
             foreach (var hitableCoord in hitableCoordinates)
             {
-                if (ship.CanHitCoordinate(hitableCoord.X, hitableCoord.Y) && !_missedCoordinates.Contains(hitableCoord))
+                if (ship.CanHitCoordinate(hitableCoord.X, hitableCoord.Y))
                 {
                     ship.HitCoordinate(hitableCoord.X, hitableCoord.Y);
                     hitShipCoordinates.Add(hitableCoord);
