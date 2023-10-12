@@ -187,6 +187,19 @@ namespace WpfApp1
             string message = moveResult.IsHit ? "Enemy hit your ship!" + moveResult.X + " " + moveResult.Y : "Enemy missed!" + moveResult.X + " " + moveResult.Y;
             SendMessageToClient(message);
             this.Dispatcher.Invoke(() => {
+
+                //BitmapImage pngImage = new BitmapImage();
+                //pngImage.BeginInit();
+                //pngImage.UriSource = new Uri("pack://application:,,,/icons/explosion.png", UriKind.RelativeOrAbsolute);
+                //pngImage.EndInit();
+
+                //Image pngImageView = new Image
+                //{
+                //    Source = pngImage,
+                //    Width = 100,
+                //    Height = 100
+                //};
+
                 Button button = MyButtons[moveResult.Y, moveResult.X];
                 button.Content = moveResult.IsHit? "X" : "O";
                 button.Style = (Style)Resources[moveResult.IsHit ? "HitButton" : "NotHitButton"];

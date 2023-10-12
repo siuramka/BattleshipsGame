@@ -63,8 +63,9 @@ namespace WpfApp1
         private Label CreateLabel()
         {
             Label b = new Label();
+            //b.Background = Brushes.Gray;
             b.BorderThickness = new Thickness(1);
-            b.BorderBrush = Brushes.LightGray;
+            b.BorderBrush = Brushes.Gray;
             return b;
         }
 

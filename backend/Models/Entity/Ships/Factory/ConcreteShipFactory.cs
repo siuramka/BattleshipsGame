@@ -9,11 +9,18 @@ namespace backend.Models.Entity.Ships.Factory
             switch (Ship)
             {
                 case ShipType.SmallShip:
-                    return new SmallShip();
+                    return new Director(new SmallShipBuilder()).MakeSmallShip();
                 case ShipType.MediumShip:
-                    return new MediumShip();
+                    return new Director(new MediumShipBuilder()).MakeMediumShip();
                 case ShipType.BigShip:
-                    return new BigShip();
+                    return new Director(new BigShipBuilder()).MakeBigShip();
+
+                //case ShipType.SmallShip:
+                //    return new SmallShip();
+                //case ShipType.MediumShip:
+                //    return new MediumShip();
+                //case ShipType.BigShip:
+                //    return new BigShip();
                 default:
                     throw new ApplicationException(string.Format("Ship '{0}' cannot be created", Ship));
             }

@@ -8,9 +8,9 @@ namespace backend.Models.Entity.Ships
     public abstract class Ship
     {
         public List<ShipCoordinate> Coordinates { get; } = new List<ShipCoordinate>();
-        public int Size { get; protected set; }
-        public bool IsVertical { get; protected set; }
-        public ShipType ShipType { get; protected set; }
+        public int Size { get; set; }
+        public bool IsVertical { get; set; }
+        public ShipType ShipType { get; set; }
         public abstract IAttackStrategy GetAttackStrategy();
         public abstract BombFactory GetShipBombFactory();
 
