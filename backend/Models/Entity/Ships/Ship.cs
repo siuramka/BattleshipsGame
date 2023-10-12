@@ -1,6 +1,7 @@
 ﻿using backend.Strategies.Ships;
 using backend.Strategies;
 using Shared;
+using backend.Models.Entity.Bombs;
 
 namespace backend.Models.Entity.Ships
 {
@@ -10,8 +11,8 @@ namespace backend.Models.Entity.Ships
         public int Size { get; protected set; }
         public bool IsVertical { get; protected set; }
         public ShipType ShipType { get; protected set; }
-
         public abstract IAttackStrategy GetAttackStrategy();
+        public abstract BombFactory GetShipBombFactory();
 
         public Ship SetVertical()
         {

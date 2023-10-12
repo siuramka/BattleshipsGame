@@ -1,5 +1,6 @@
 ﻿using backend.Models.Entity;
 using backend.Models.Entity.Ships;
+using backend.Models.Entity.Ships.Factory;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.VisualBasic;
 using Microsoft.Xaml.Behaviors;
@@ -67,6 +68,7 @@ namespace WpfApp1
              .Build();
 
             Loaded += async (sender, e) => await ConnectToServer();
+            InitializeBombAttackBox();
             SetupListeners();
         }
         private Button CreateButton(bool myBoard, int x, int y)
@@ -122,6 +124,10 @@ namespace WpfApp1
             this.Dispatcher.Invoke(() =>
             {
                 ShipAttacksBox.IsEnabled = true;
+            });
+            this.Dispatcher.Invoke(() =>
+            {
+                BombAttackBox.IsEnabled = true;
             });
             for (int y = 0; y < MAP_SIZE_Y; y++)
             {
@@ -270,6 +276,22 @@ namespace WpfApp1
                 }
             });
         }
+
+        private void InitializeBombAttackBox()
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                BombAttackBox.Items.Add(BombType.MissileBomb); // type index needs to be same as Items index :D
+                BombAttackBox.Items.Add(BombType.AtomicBomb);
+            });
+            this.Dispatcher.Invoke(() =>
+            {
+                if (BombAttackBox.SelectedItem == null)
+                {
+                    BombAttackBox.SelectedIndex = 0;
+                }
+            });
+        }
         private void HandleOnSetShipResult(SetupShipResponse setupShipResponse)
         {
             if (setupShipResponse.CanPlace)
@@ -349,8 +371,10 @@ namespace WpfApp1
             int y = tag[1];
 
             Ship selectedAttackShip = (Ship)ShipAttacksBox.SelectedItem;
+            BombType selectedBomb = (BombType)BombAttackBox.SelectedItem;
 
-            _connection.SendAsync("MakeMove",new MakeMove(x, y, selectedAttackShip.ShipType, selectedAttackShip.IsVertical));
+
+            _connection.SendAsync("MakeMove",new MakeMove(x, y, selectedAttackShip.ShipType, selectedAttackShip.IsVertical, selectedBomb));
             EnableEnemyBoard(false);
         }
 

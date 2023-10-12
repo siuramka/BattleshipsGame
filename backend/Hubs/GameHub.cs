@@ -1,6 +1,8 @@
 ﻿using backend.Manager;
 using backend.Models.Entity;
+using backend.Models.Entity.Bombs;
 using backend.Models.Entity.Ships;
+using backend.Models.Entity.Ships.Factory;
 using backend.Service;
 using backend.Strategies.Ships;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -172,32 +174,22 @@ public class GameHub : Hub
 
         var enemyBoard = enemyPlayer.OwnBoard;
 
-        List<ShipCoordinate> hitShipCoordinates = new();
+        enemyBoard.SetEnemyAttackShip(ship);
+        enemyBoard.ClearMissedCoordinates();//clear missed coordinates so they dont duplicate
+        List<ShipCoordinate> hitShipCoordinates = enemyBoard.GetHitCoordinates(move.X, move.Y, move.AttackBomb);
+        List<ShipCoordinate> missedCoordinates = enemyBoard.GetMissedCoordinates();
 
-        if (ship is Ship)
-        {
-            enemyBoard.SetEnemyAttackStrategy(ship.GetAttackStrategy());
-            hitShipCoordinates = enemyBoard.TryHit(move.X, move.Y);
-        }
-
-        // TODO: implement hit logic for bigger missiles
-        bool exists = false;
         foreach(var hitCoord in hitShipCoordinates)
         {
-            if (hitCoord.X == move.X && hitCoord.Y == move.Y)
-            {
-                exists = true;
-            }
             await Clients.Client(currentPlayer.Id).SendAsync("ReturnMove", new MoveResult(hitCoord.X, hitCoord.Y, true));//return to attacker if he hit ship or not
             await Clients.Client(enemyPlayer.Id).SendAsync("OpponentResult", new MoveResult(hitCoord.X, hitCoord.Y, true));//return to who is getting attacked whenether or not his ship got hit
         }
 
-        if (!exists)
+        foreach(var missCord in missedCoordinates)
         {
-            await Clients.Client(currentPlayer.Id).SendAsync("ReturnMove", new MoveResult(move.X, move.Y, false));
-            await Clients.Client(enemyPlayer.Id).SendAsync("OpponentResult", new MoveResult(move.X, move.Y, false));
+            await Clients.Client(currentPlayer.Id).SendAsync("ReturnMove", new MoveResult(missCord.X, missCord.Y, false));//return to attacker if he hit ship or not
+            await Clients.Client(enemyPlayer.Id).SendAsync("OpponentResult", new MoveResult(missCord.X, missCord.Y, false));//return to who is getting attacked whenether or not his ship got hit
         }
-
 
         if (enemyBoard.HaveAllShipsSunk) // if all enemy ships have sunk
         {
