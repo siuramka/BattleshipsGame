@@ -3,6 +3,7 @@ using backend.Models.Entity;
 using backend.Models.Entity.Bombs;
 using backend.Models.Entity.Ships;
 using backend.Models.Entity.Ships.Factory;
+using backend.Observer;
 using backend.Service;
 using backend.Strategies.Ships;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -60,12 +61,22 @@ public class GameHub : Hub
         await Groups.AddToGroupAsync(game.Player1.Id, game.Group.Id);
         await Groups.AddToGroupAsync(game.Player2.Id, game.Group.Id);
         await Clients.Client(player.Id).SendAsync("WaitingForOpponent", player.Name);
-        await SetupShips(game.Group.Id);
+        await SetupShips(game);
     }
 
-    private async Task SetupShips(string gameId)
+    private async Task SetupShips(Game game)
     {
-        await Clients.Group(gameId).SendAsync("SetupShips", ""); //send to frontend for players to setup ships
+
+        Subject s = new Subject(Clients);
+        s.AddObserver(new Observer.Observer(game.Player1.Id));
+        s.AddObserver(new Observer.Observer(game.Player2.Id));
+        s.SubjectState = "SetupShips";
+        s.SubjectMessage = "";
+
+        await s.NotifyObservers();
+
+        //send to frontend for players to setup ships
+        //await Clients.Group(gameId).SendAsync("SetupShips", "");
     }
     // _connection.SendAsync("SetShip", size, x, y, vertical);
     public async Task AddShipToPlayer(int x, int y, ShipType shipType, bool isVertical)
