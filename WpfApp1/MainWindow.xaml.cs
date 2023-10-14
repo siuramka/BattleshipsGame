@@ -8,7 +8,9 @@ using Shared;
 using Shared.Transfer;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -188,20 +190,10 @@ namespace WpfApp1
             SendMessageToClient(message);
             this.Dispatcher.Invoke(() => {
 
-                //BitmapImage pngImage = new BitmapImage();
-                //pngImage.BeginInit();
-                //pngImage.UriSource = new Uri("pack://application:,,,/icons/explosion.png", UriKind.RelativeOrAbsolute);
-                //pngImage.EndInit();
-
-                //Image pngImageView = new Image
-                //{
-                //    Source = pngImage,
-                //    Width = 100,
-                //    Height = 100
-                //};
+                
 
                 Button button = MyButtons[moveResult.Y, moveResult.X];
-                button.Content = moveResult.IsHit? "X" : "O";
+                button.Content = moveResult.IsHit? Explosion() : "O";
                 button.Style = (Style)Resources[moveResult.IsHit ? "HitButton" : "NotHitButton"];
             });   
         }
@@ -211,12 +203,38 @@ namespace WpfApp1
             SendMessageToClient(message);
             this.Dispatcher.Invoke(() => {
                 Button button = EnemyButtons[moveResult.Y, moveResult.X];
-                button.Content = moveResult.IsHit ? "X" : "O";
+                button.Content = moveResult.IsHit ? Explosion() : "O";
                 Style newStyle = (Style)Resources[moveResult.IsHit ? "HitButton" : "NotHitButton"];
                 EnemeyBoardStyles[moveResult.X * 10 + moveResult.Y] = newStyle;
                 button.Style = newStyle;
             });
         }
+
+        private Image Explosion()
+        {
+            string imagePath = @"icons\explosion.png";
+
+            string currentAssemblyPath = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string currentAssemblyParentPath = System.IO.Path.GetDirectoryName(currentAssemblyPath);
+            string filePath = System.IO.Path.Combine(currentAssemblyParentPath, imagePath);
+
+            BitmapImage pngImage = new BitmapImage();
+
+            pngImage.BeginInit();
+            Uri imageUri = new Uri(filePath, UriKind.RelativeOrAbsolute);
+            pngImage.UriSource = imageUri;
+            pngImage.EndInit();
+
+            Image pngImageView = new Image
+            {
+                Source = pngImage,
+                Stretch = Stretch.Fill,
+                StretchDirection = StretchDirection.Both
+            };
+            return pngImageView;
+        }
+
+
         private void SendMessageToClient(string message)
         {
             this.Dispatcher.Invoke(() =>
