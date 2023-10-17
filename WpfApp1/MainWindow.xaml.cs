@@ -10,10 +10,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Xml.Serialization;
 using Interaction = Microsoft.Xaml.Behaviors.Interaction;
 
 //// if you want to update UI state, you need to call your change in this
@@ -170,6 +168,41 @@ namespace WpfApp1
             // updates
             _connection.On<List<ShipCoordinate>>("AddFlags", HandleAddFlags);
             _connection.On<List<ShipCoordinate>>("AddEnemyFlags", HandleAddEnemyFlags);
+            _connection.On<List<ShipCoordinate>>("RerenderCoordinates", HandleRerenderCoordinates);
+        }
+
+        private void HandleRerenderCoordinates(List<ShipCoordinate> coordinates)
+        {
+            foreach (ShipCoordinate coord in coordinates)
+            {
+                this.Dispatcher.Invoke(() =>
+                {
+                    UpdateButtonByCoordinate(MyButtons, coord, "");
+                    SolidColorBrush? backgroundColor = ParseColorToBrush(coord.Background);
+                    if (backgroundColor != null)
+                    {
+                        MyButtons[coord.Y, coord.X].Background = backgroundColor;
+                    }
+                    SolidColorBrush? borderColor = ParseColorToBrush(coord.BorderColor);
+                    if (borderColor != null)
+                    {
+                        MyButtons[coord.Y, coord.X].BorderBrush = borderColor;
+                    }
+                });
+            }
+        }
+
+        private SolidColorBrush? ParseColorToBrush(Shared.Color color)
+        {
+            switch(color)
+            {
+                case Shared.Color.Yellow:
+                    return Brushes.Yellow;
+                case Shared.Color.Blue:
+                    return Brushes.Blue;
+                default:
+                    return null;
+            }
         }
 
         private void HandleAddFlags(List<ShipCoordinate> coordinates)
@@ -178,8 +211,7 @@ namespace WpfApp1
             {
                 foreach(ShipCoordinate coordinate in coordinates)
                 {
-                    Image? icon = GetCoordinateImage(coordinate.Icon);
-                    MyButtons[coordinate.Y, coordinate.X].Content = icon != null ? icon : "F";
+                    UpdateButtonByCoordinate(MyButtons, coordinate, "F");
                 }
             });
         }
@@ -190,9 +222,7 @@ namespace WpfApp1
             {
                 foreach (ShipCoordinate coordinate in coordinates)
                 {
-                    Image? icon = GetCoordinateImage(coordinate.Icon);
-                    Button button = EnemyButtons[coordinate.Y, coordinate.X];
-                    button.Content = icon != null ? icon : "F";
+                    UpdateButtonByCoordinate(EnemyButtons, coordinate, "F");
                 }
             });
         }
@@ -229,6 +259,7 @@ namespace WpfApp1
                 Image? explosionImage = GetCoordinateImage(ShipCoordinateIcon.Explosion);
                 button.Content = moveResult.IsHit ? explosionImage != null ? explosionImage : "X" : "O";
                 Style newStyle = (Style)Resources[moveResult.IsHit ? "HitButton" : "NotHitButton"];
+                button.Background = null;
                 EnemeyBoardStyles[moveResult.X * 10 + moveResult.Y] = newStyle;
                 if (!moveResult.IsHit)
                 {
@@ -372,6 +403,26 @@ namespace WpfApp1
             _connection.SendAsync("FlagShip", x, y);
         }
 
+        private void HandleSetYellowBackground(object sender, RoutedEventArgs e)
+        {
+            var b = sender as MenuItem;
+            int[] tag = b.Tag as int[];
+            int x = tag[0];
+            int y = tag[1];
+
+            _connection.SendAsync("SetShipYellowBackground", x, y);
+        }
+
+        private void HandleSetBlueBorder(object sender, RoutedEventArgs e)
+        {
+            var b = sender as MenuItem;
+            int[] tag = b.Tag as int[];
+            int x = tag[0];
+            int y = tag[1];
+
+            _connection.SendAsync("SetShipBlueBorder", x, y);
+        }
+
         private void HandleOnSetShipResult(SetupShipResponse setupShipResponse)
         {
             if (setupShipResponse.CanPlace)
@@ -381,18 +432,32 @@ namespace WpfApp1
                 {
                     this.Dispatcher.Invoke(() =>
                     {
-                        Image? icon = GetCoordinateImage(coordinate.Icon);
-                        MyButtons[coordinate.Y, coordinate.X].Content = icon != null ? icon : "#";
+                        UpdateButtonByCoordinate(MyButtons, coordinate, "#");
                         MyButtons[coordinate.Y, coordinate.X].ContextMenu = new ContextMenu();
 
-                        var item = new MenuItem { Header = "Flag ship", Tag = new int[] { coordinate.X, coordinate.Y } };
+                        int[] tag = new int[] { coordinate.X, coordinate.Y };
+                        var item = new MenuItem { Header = "Flag ship", Tag = tag };
                         item.Click += HandleSetFlag;
+                        MyButtons[coordinate.Y, coordinate.X].ContextMenu.Items.Add(item);
+
+                        item = new MenuItem { Header = "Set ship yellow background", Tag = tag };
+                        item.Click += HandleSetYellowBackground;
+                        MyButtons[coordinate.Y, coordinate.X].ContextMenu.Items.Add(item);
+
+                        item = new MenuItem { Header = "Set ship blue border", Tag = tag };
+                        item.Click += HandleSetBlueBorder;
                         MyButtons[coordinate.Y, coordinate.X].ContextMenu.Items.Add(item);
                     });
                 }
             }
 
             EnableMyBoard(true);
+        }
+
+        private void UpdateButtonByCoordinate(Button[,] buttons, ShipCoordinate coordinate, string defaultContent)
+        {
+            Image? icon = GetCoordinateImage(coordinate.Icon);
+            buttons[coordinate.Y, coordinate.X].Content = icon != null ? icon : defaultContent;
         }
 
         private void EnableMyBoard(bool enable)
@@ -455,7 +520,6 @@ namespace WpfApp1
 
             Ship selectedAttackShip = (Ship)ShipAttacksBox.SelectedItem;
             BombType selectedBomb = (BombType)BombAttackBox.SelectedItem;
-
 
             _connection.SendAsync("MakeMove",new MakeMove(x, y, selectedAttackShip.ShipType, selectedAttackShip.IsVertical, selectedBomb));
             EnableEnemyBoard(false);

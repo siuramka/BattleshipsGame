@@ -1,12 +1,13 @@
 ﻿using backend.Models.Entity.Bombs;
 using backend.Strategies;
 
-namespace backend.Models.Entity.Ships
+namespace backend.Models.Entity.Ships.Decorators
 {
     public class FlagDecorator : Ship
     {
         private Ship _ship;
-        public FlagDecorator(Ship ship) {
+        public FlagDecorator(Ship ship)
+        {
             _ship = ship;
             ShipType = ship.ShipType;
             IsVertical = ship.IsVertical;
