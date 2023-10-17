@@ -92,6 +92,7 @@ public class GameHub : Hub
         // add handling for ship placement on different size ships etc...
         //
         Ship ship = shipFactory.GetShip(shipType);
+
         if (isVertical)
         {
             ship.SetVertical();
@@ -102,17 +103,56 @@ public class GameHub : Hub
 
         if (checkIfShipDoesNotFit(ship))
         {
-            await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", new SetupShipResponse(false, ship.Coordinates, shipType)); //send that cant place there
+            await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", new SetupShipResponse(false, ship.GetCoordinates(), shipType)); //send that cant place there
         }
 
+        await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", new SetupShipResponse(true, ship.GetCoordinates(), shipType));
+    }
 
-        await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", new SetupShipResponse(true, ship.Coordinates, shipType));
+    public async Task FlagShip(int x, int y)
+    {
+        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
+        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
+        if (currentPlayer == null || currentGame == null)
+        {
+            return;
+        }
+        var enemyPlayer = currentGame.GetEnemyPlayer(currentPlayer);
 
+        List<Ship> ships = currentPlayer.OwnBoard.GetShips();
+
+        int index = 0;
+        Ship? existingShip = null;
+        foreach ( Ship ship in ships )
+        {
+            foreach(ShipCoordinate coordinate in ship.GetCoordinates() )
+            {
+                if (coordinate.X == x && coordinate.Y == y)
+                {
+                    existingShip = ship;
+                    break;
+                }
+            }
+
+            if (existingShip != null)
+            {
+                break;
+            }
+
+            index++;
+        }
+
+        if (existingShip != null)
+        {
+            existingShip = new FlagDecorator(existingShip);
+            await Clients.Client(currentPlayer.Id).SendAsync("AddFlags", existingShip.GetCoordinates());
+            await Clients.Client(enemyPlayer.Id).SendAsync("AddEnemyFlags", existingShip.GetCoordinates());
+        }
     }
 
     private bool checkIfShipDoesNotFit(Ship ship)
     {
-        foreach (ShipCoordinate coord in ship.Coordinates)
+        foreach (ShipCoordinate coord in ship.GetCoordinates())
         {
             if(coord.X > 10 || coord.Y > 10)
             {
@@ -155,7 +195,7 @@ public class GameHub : Hub
         List<ShipCoordinate> shipCoordinates = new List<ShipCoordinate>();
         foreach (var ship in enemyShips)
         {
-            foreach(var shipCoordinate in ship.Coordinates)
+            foreach(var shipCoordinate in ship.GetCoordinates())
             {
                 shipCoordinates.Add(shipCoordinate);
             }

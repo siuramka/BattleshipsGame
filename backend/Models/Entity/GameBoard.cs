@@ -22,6 +22,14 @@ public class GameBoard
     {
         _battleships.Add(ship);
     }
+    public void ReplaceShipAt(int index, Ship ship)
+    {
+        if (index >= _battleships.Count)
+        {
+            return;
+        }
+        _battleships[index] = ship;
+    }
     public bool HaveAllShipsSunk
     {
         get

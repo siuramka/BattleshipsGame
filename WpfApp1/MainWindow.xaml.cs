@@ -10,8 +10,10 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Xml.Serialization;
 using Interaction = Microsoft.Xaml.Behaviors.Interaction;
 
 //// if you want to update UI state, you need to call your change in this
@@ -42,7 +44,6 @@ namespace WpfApp1
             shipFactory.GetShip(ShipType.SmallShip), 
             shipFactory.GetShip(ShipType.MediumShip),
             shipFactory.GetShip(ShipType.BigShip),
-            shipFactory.GetShip(ShipType.SmallShip).SetVertical(),
             shipFactory.GetShip(ShipType.MediumShip).SetVertical(),
             shipFactory.GetShip(ShipType.BigShip).SetVertical(),
         };
@@ -51,6 +52,7 @@ namespace WpfApp1
         private Dictionary<int, Style> EnemeyBoardStyles = new Dictionary<int, Style>(); // TODO: use momento design pattern
         private string gameState = ""; // change to class ?
         private HubConnection _connection;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -63,6 +65,7 @@ namespace WpfApp1
             InitializeBombAttackBox();
             SetupListeners();
         }
+
         private Button CreateButton(bool myBoard, int x, int y)
         {
             Button b = new Button();
@@ -111,6 +114,7 @@ namespace WpfApp1
 
             return b;
         }
+
         private void InitializeUi()
         {
             this.Dispatcher.Invoke(() =>
@@ -143,6 +147,7 @@ namespace WpfApp1
                 }
             }
         }
+
         private async Task ConnectToServer()
         {
             await _connection.StartAsync();
@@ -155,13 +160,41 @@ namespace WpfApp1
             _connection.On<string>("SetupShips", HandleOnSetupShips);
             _connection.On<string>("GameStarted", HandleOnGameStarted);
             _connection.On<string>("YourTurn", HandleOnPlayerTurn);
-            //attacks
+
+            // attacks
             _connection.On<MoveResult>("ReturnMove", HandleOnReturnMove);
             _connection.On<MoveResult>("OpponentResult", HandleOnOpponentResult);
-
-            _connection.On<SetupShipResponse>("SetupShipResponse", HandleOnSetShipResult); // need to add DTO or smt
-
+            _connection.On<SetupShipResponse>("SetupShipResponse", HandleOnSetShipResult);
             _connection.On<bool>("GameOver", HandleOnGameOver);
+
+            // updates
+            _connection.On<List<ShipCoordinate>>("AddFlags", HandleAddFlags);
+            _connection.On<List<ShipCoordinate>>("AddEnemyFlags", HandleAddEnemyFlags);
+        }
+
+        private void HandleAddFlags(List<ShipCoordinate> coordinates)
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                foreach(ShipCoordinate coordinate in coordinates)
+                {
+                    Image? icon = GetCoordinateImage(coordinate.Icon);
+                    MyButtons[coordinate.Y, coordinate.X].Content = icon != null ? icon : "F";
+                }
+            });
+        }
+
+        private void HandleAddEnemyFlags(List<ShipCoordinate> coordinates)
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                foreach (ShipCoordinate coordinate in coordinates)
+                {
+                    Image? icon = GetCoordinateImage(coordinate.Icon);
+                    Button button = EnemyButtons[coordinate.Y, coordinate.X];
+                    button.Content = icon != null ? icon : "F";
+                }
+            });
         }
 
         private void HandleOnGameOver(bool hasWonGame)
@@ -180,6 +213,7 @@ namespace WpfApp1
             SendMessageToClient(message);
             this.Dispatcher.Invoke(() => {
                 Button button = MyButtons[moveResult.Y, moveResult.X];
+                button.ContextMenu = null;
                 Image? explosionImage = GetCoordinateImage(ShipCoordinateIcon.Explosion);
                 button.Content = moveResult.IsHit ? explosionImage != null ? explosionImage : "X" : "O";
                 button.Style = (Style)Resources[moveResult.IsHit ? "HitButton" : "NotHitButton"];
@@ -196,6 +230,16 @@ namespace WpfApp1
                 button.Content = moveResult.IsHit ? explosionImage != null ? explosionImage : "X" : "O";
                 Style newStyle = (Style)Resources[moveResult.IsHit ? "HitButton" : "NotHitButton"];
                 EnemeyBoardStyles[moveResult.X * 10 + moveResult.Y] = newStyle;
+                if (!moveResult.IsHit)
+                {
+                    button.Tag = new int[2] { moveResult.X, moveResult.Y };
+                    button.MouseEnter += HandleMouseEnter;
+                    button.MouseLeave += HandleMouseLeave;
+                    button.Click += HandleShot;
+                } else
+                {
+                    button.Tag = null;
+                }
                 button.Style = newStyle;
             });
         }
@@ -227,7 +271,6 @@ namespace WpfApp1
             }
         }
 
-
         private void SendMessageToClient(string message)
         {
             this.Dispatcher.Invoke(() =>
@@ -258,6 +301,7 @@ namespace WpfApp1
                 UserName.Text = "Welcome, " + username;
             });
         }
+
         private void HandleOnSetupShips(string _)
         {
             gameState = "setupingships";
@@ -272,6 +316,7 @@ namespace WpfApp1
                 EnableEnemyBoard(false);
             });
         }
+
         private void HandleShipArrangement(object sender, RoutedEventArgs e)
         {
             var b = sender as MenuItem;
@@ -283,8 +328,8 @@ namespace WpfApp1
             }
 
             _connection.SendAsync("AddShipToPlayer", tag.x, tag.y, tag.Ship.ShipType, tag.Ship.IsVertical);
-            EnableMyBoard(false);
         }
+
         private void HandleShipAttacks(ShipType shipType)
         {
             ShipFactory shipFactory = new ConcreteShipFactory();
@@ -316,17 +361,33 @@ namespace WpfApp1
                 }
             });
         }
+        
+        private void HandleSetFlag(object sender, RoutedEventArgs e)
+        {
+            var b = sender as MenuItem;
+            int[] tag = b.Tag as int[];
+            int x = tag[0];
+            int y = tag[1];
+
+            _connection.SendAsync("FlagShip", x, y);
+        }
+
         private void HandleOnSetShipResult(SetupShipResponse setupShipResponse)
         {
             if (setupShipResponse.CanPlace)
             {
                 HandleShipAttacks(setupShipResponse.TypeOfShip);
-                foreach(ShipCoordinate coordinate in setupShipResponse.ShipCoordinates)
+                foreach (ShipCoordinate coordinate in setupShipResponse.ShipCoordinates)
                 {
                     this.Dispatcher.Invoke(() =>
                     {
                         Image? icon = GetCoordinateImage(coordinate.Icon);
                         MyButtons[coordinate.Y, coordinate.X].Content = icon != null ? icon : "#";
+                        MyButtons[coordinate.Y, coordinate.X].ContextMenu = new ContextMenu();
+
+                        var item = new MenuItem { Header = "Flag ship", Tag = new int[] { coordinate.X, coordinate.Y } };
+                        item.Click += HandleSetFlag;
+                        MyButtons[coordinate.Y, coordinate.X].ContextMenu.Items.Add(item);
                     });
                 }
             }
@@ -336,26 +397,22 @@ namespace WpfApp1
 
         private void EnableMyBoard(bool enable)
         {
-
             foreach (Button b in MyButtons)
             {
                 this.Dispatcher.Invoke(() =>
                 {
-                    var content = b.Content != null ? b.Content.ToString() : "";
-                    b.IsEnabled = enable && content.Length == 0;
+                    b.IsEnabled = enable;
                 });
             }
         }
 
         private void EnableEnemyBoard(bool enable)
         {
-
             foreach (Button b in EnemyButtons)
             {
                 this.Dispatcher.Invoke(() =>
                 {
-                    var content = b.Content != null ? b.Content.ToString() : "";
-                    b.IsEnabled = enable && content.Length == 0;
+                    b.IsEnabled = enable && b.Tag != null;
                 });
             }
 
@@ -365,18 +422,34 @@ namespace WpfApp1
         {
             if (this.gameState == "setupingships")
             {
-                EnableMyBoard(false);
                 _connection.SendAsync("DoneShipSetup");
+                ClearEmptyButtons();
             }
 
             ActionButton.IsEnabled = false;
         }
 
+        private void ClearEmptyButtons()
+        {
+            foreach (Button b in MyButtons)
+            {
+                var content = b.Content != null ? b.Content.ToString() : "";
+                if (content?.Length > 0)
+                {
+                    continue;
+                }
+                b.ContextMenu = null;
+            }
+        }
 
         private void HandleShot(object sender, RoutedEventArgs e)
         {
             var button = (Button)sender;
             int[] tag = button.Tag as int[];
+            if (tag == null)
+            {
+                return;
+            }
             int x = tag[0];
             int y = tag[1];
 
@@ -392,6 +465,10 @@ namespace WpfApp1
         {
             var button = (Button)sender;
             int[] tag = button.Tag as int[];
+            if (tag == null)
+            {
+                return;
+            }
             int x = tag[0];
             int y = tag[1];
 
@@ -408,6 +485,10 @@ namespace WpfApp1
         {
             var button = (Button)sender;
             int[] tag = button.Tag as int[];
+            if (tag == null)
+            {
+                return;
+            }
             int x = tag[0];
             int y = tag[1];
 

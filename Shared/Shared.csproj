@@ -10,6 +10,9 @@
     <None Update="icons\explosion.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="icons\flag.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="icons\ship.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

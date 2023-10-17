@@ -15,14 +15,14 @@ namespace Shared.Transfer
             ShipCoordinates = new List<ShipCoordinate>();
             foreach(ShipCoordinate coord in shipCoordinates)
             {
-                ShipCoordinate shipClone = new ShipCoordinate(coord.X, coord.Y);
-                shipClone.Icon = coord.Icon;
+                ShipCoordinate shipCoordinateClone = new ShipCoordinate(coord.X, coord.Y);
+                shipCoordinateClone.Icon = coord.Icon;
                 if (coord.IsHit)
                 {
-                    shipClone.Hit();
+                    shipCoordinateClone.Hit();
                 }
                 
-                ShipCoordinates.Add(shipClone);
+                ShipCoordinates.Add(shipCoordinateClone);
             }
         }
     }
