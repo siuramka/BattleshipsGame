@@ -259,7 +259,6 @@ namespace WpfApp1
                 Image? explosionImage = GetCoordinateImage(ShipCoordinateIcon.Explosion);
                 button.Content = moveResult.IsHit ? explosionImage != null ? explosionImage : "X" : "O";
                 Style newStyle = (Style)Resources[moveResult.IsHit ? "HitButton" : "NotHitButton"];
-                button.Background = null;
                 EnemeyBoardStyles[moveResult.X * 10 + moveResult.Y] = newStyle;
                 if (!moveResult.IsHit)
                 {
