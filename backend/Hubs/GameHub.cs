@@ -102,11 +102,11 @@ public class GameHub : Hub
 
         if (checkIfShipDoesNotFit(ship))
         {
-            await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", new SetupShipResponse(false, -1, -1, 1, shipType, isVertical)); //send that cant place there
+            await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", new SetupShipResponse(false, ship.Coordinates, shipType)); //send that cant place there
         }
 
 
-        await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", new SetupShipResponse(true, x, y, ship.Size, shipType, isVertical));
+        await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", new SetupShipResponse(true, ship.Coordinates, shipType));
 
     }
 

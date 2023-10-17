@@ -2,26 +2,16 @@
 using backend.Models.Entity.Ships;
 using backend.Models.Entity.Ships.Factory;
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.VisualBasic;
 using Microsoft.Xaml.Behaviors;
 using Shared;
 using Shared.Transfer;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Interaction = Microsoft.Xaml.Behaviors.Interaction;
 
 //// if you want to update UI state, you need to call your change in this
@@ -189,49 +179,52 @@ namespace WpfApp1
             string message = moveResult.IsHit ? "Enemy hit your ship!" + moveResult.X + " " + moveResult.Y : "Enemy missed!" + moveResult.X + " " + moveResult.Y;
             SendMessageToClient(message);
             this.Dispatcher.Invoke(() => {
-
-                
-
                 Button button = MyButtons[moveResult.Y, moveResult.X];
-                button.Content = moveResult.IsHit? Explosion() : "O";
+                Image? explosionImage = GetCoordinateImage(ShipCoordinateIcon.Explosion);
+                button.Content = moveResult.IsHit ? explosionImage != null ? explosionImage : "X" : "O";
                 button.Style = (Style)Resources[moveResult.IsHit ? "HitButton" : "NotHitButton"];
             });   
         }
+
         private void HandleOnReturnMove(MoveResult moveResult)
         {
             string message = moveResult.IsHit ? "You hit enemy ship!" + moveResult.X + " " + moveResult.Y : "You missed enemy ship!" + moveResult.X + " " + moveResult.Y;
             SendMessageToClient(message);
             this.Dispatcher.Invoke(() => {
                 Button button = EnemyButtons[moveResult.Y, moveResult.X];
-                button.Content = moveResult.IsHit ? Explosion() : "O";
+                Image? explosionImage = GetCoordinateImage(ShipCoordinateIcon.Explosion);
+                button.Content = moveResult.IsHit ? explosionImage != null ? explosionImage : "X" : "O";
                 Style newStyle = (Style)Resources[moveResult.IsHit ? "HitButton" : "NotHitButton"];
                 EnemeyBoardStyles[moveResult.X * 10 + moveResult.Y] = newStyle;
                 button.Style = newStyle;
             });
         }
 
-        private Image Explosion()
+        private Image? GetCoordinateImage(string relativeImagePath)
         {
-            string imagePath = @"icons\explosion.png";
-
-            string currentAssemblyPath = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            string currentAssemblyParentPath = System.IO.Path.GetDirectoryName(currentAssemblyPath);
-            string filePath = System.IO.Path.Combine(currentAssemblyParentPath, imagePath);
+            string basePath = AppDomain.CurrentDomain.BaseDirectory;
+            string filePath = System.IO.Path.Combine(basePath, relativeImagePath);
 
             BitmapImage pngImage = new BitmapImage();
-
-            pngImage.BeginInit();
-            Uri imageUri = new Uri(filePath, UriKind.RelativeOrAbsolute);
-            pngImage.UriSource = imageUri;
-            pngImage.EndInit();
-
-            Image pngImageView = new Image
+            try
             {
-                Source = pngImage,
-                Stretch = Stretch.Fill,
-                StretchDirection = StretchDirection.Both
-            };
-            return pngImageView;
+                pngImage.BeginInit();
+                Uri imageUri = new Uri(filePath, UriKind.RelativeOrAbsolute);
+                pngImage.UriSource = imageUri;
+                pngImage.EndInit();
+
+                Image pngImageView = new Image
+                {
+                    Source = pngImage,
+                    Stretch = Stretch.Fill,
+                    StretchDirection = StretchDirection.Both
+                };
+
+                return pngImageView;
+            } catch
+            {
+                return null;
+            }
         }
 
 
@@ -328,27 +321,13 @@ namespace WpfApp1
             if (setupShipResponse.CanPlace)
             {
                 HandleShipAttacks(setupShipResponse.TypeOfShip);
-                if (setupShipResponse.IsVertical)
+                foreach(ShipCoordinate coordinate in setupShipResponse.ShipCoordinates)
                 {
-                    for (int i = setupShipResponse.Y; i < setupShipResponse.Y + setupShipResponse.ShipSize; i++)
+                    this.Dispatcher.Invoke(() =>
                     {
-                        this.Dispatcher.Invoke(() =>
-                        {
-
-                            MyButtons[i, setupShipResponse.X].Content = "#";
-                        });
-                    }
-                }
-                else
-                {
-                    for (int i = setupShipResponse.X; i < setupShipResponse.X + setupShipResponse.ShipSize; i++)
-                    {
-                        this.Dispatcher.Invoke(() =>
-                        {
-                            MyButtons[setupShipResponse.Y, i].Content = "#";
-
-                        });
-                    }
+                        Image? icon = GetCoordinateImage(coordinate.Icon);
+                        MyButtons[coordinate.Y, coordinate.X].Content = icon != null ? icon : "#";
+                    });
                 }
             }
 

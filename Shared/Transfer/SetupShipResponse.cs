@@ -1,28 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using backend.Models.Entity.Ships;
 
 namespace Shared.Transfer
 {
     public class SetupShipResponse
     {
         public bool CanPlace { get; set; }
-        public int X { get; set; }
-        public int Y { get; set; }
-        public int ShipSize { get; set; }
+        public List<ShipCoordinate> ShipCoordinates { get; private set; }
         public ShipType TypeOfShip { get; set; }
-        public bool IsVertical { get; set; }
 
-        public SetupShipResponse(bool canPlace, int x, int y, int shipSize, ShipType typeOfShip, bool isVertical)
+        public SetupShipResponse(bool canPlace, List<ShipCoordinate> shipCoordinates, ShipType typeOfShip)
         {
             CanPlace = canPlace;
-            X = x;
-            Y = y;
-            ShipSize = shipSize;
             TypeOfShip = typeOfShip;
-            IsVertical = isVertical;
+            ShipCoordinates = new List<ShipCoordinate>();
+            foreach(ShipCoordinate coord in shipCoordinates)
+            {
+                ShipCoordinate shipClone = new ShipCoordinate(coord.X, coord.Y);
+                shipClone.Icon = coord.Icon;
+                if (coord.IsHit)
+                {
+                    shipClone.Hit();
+                }
+                
+                ShipCoordinates.Add(shipClone);
+            }
         }
     }
 }
