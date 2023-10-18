@@ -1,4 +1,5 @@
-﻿using backend.Manager;
+﻿using backend.Command;
+using backend.Manager;
 using backend.Models.Entity;
 using backend.Models.Entity.Ships;
 using backend.Models.Entity.Ships.Decorators;
@@ -9,7 +10,9 @@ using backend.Service;
 using Microsoft.AspNetCore.SignalR;
 using Shared;
 using Shared.Transfer;
-using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Numerics;
 
 namespace backend.Hubs;
 
@@ -250,38 +253,49 @@ public class GameHub : Hub
     //public async Task MakeMove(int x, int y, ShipType shipType, bool isVertical)
     public async Task MakeMove(MakeMove move)
     {
-        GameFacade gameFascade = new GameFacade(Context.ConnectionId);
-        List<ShipCoordinate> hitShipCoordinates = gameFascade.MakeMove(move);
-        List<ShipCoordinate> missedCoordinates = gameFascade.GetMissedCoordinates();
+        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
+        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
+        var enemyPlayer = currentGame.GetEnemyPlayer(currentPlayer);
 
-        foreach (var hitCoord in hitShipCoordinates)
-        {
-            await Clients.Client(gameFascade.GetCurrentPlayer().Id).SendAsync("ReturnMove", new MoveResult(hitCoord.X, hitCoord.Y, true));//return to attacker if he hit ship or not
-            await Clients.Client(gameFascade.GetEnemyPlayer().Id).SendAsync("OpponentResult", new MoveResult(hitCoord.X, hitCoord.Y, true));//return to who is getting attacked whenether or not his ship got hit
-        }
+        // Create a new instance of ShotCommand and execute it
+        var shotCommand = new ShotCommand(currentPlayer, enemyPlayer, move.X, move.Y, move.TypeOfShip,
+            move.IsVertical, move.AttackBomb, _gameManager, Clients.Client(currentPlayer.Id),
+            Clients.Client(enemyPlayer.Id), enemyPlayer.OwnBoard);
 
-        foreach(var missCord in missedCoordinates)
-        {
-            await Clients.Client(gameFascade.GetCurrentPlayer().Id).SendAsync("ReturnMove", new MoveResult(missCord.X, missCord.Y, false));//return to attacker if he hit ship or not
-            await Clients.Client(gameFascade.GetEnemyPlayer().Id).SendAsync("OpponentResult", new MoveResult(missCord.X, missCord.Y, false));//return to who is getting attacked whenether or not his ship got hit
-        }
-
-        if (gameFascade.HasGameEnded()) 
-        {
-            await Clients.Client(gameFascade.GetCurrentPlayer().Id).SendAsync("GameOver", true); // send to players that game is over and send winner name
-            await Clients.Client(gameFascade.GetEnemyPlayer().Id).SendAsync("GameOver", false); // send to players that game is over and send winner name
-            return;
-        }
-
-
-        if (hitShipCoordinates.Any())
-        {
-            await Clients.Client(gameFascade.GetCurrentPlayer().Id).SendAsync("YourTurn", "YourTurn");
-            return;
-        }
-
-        await Clients.Client(gameFascade.GetEnemyPlayer().Id).SendAsync("YourTurn", "YourTurn");
+        await shotCommand.Execute();
+        var enemyBoard = enemyPlayer.OwnBoard;
     }
+
+    public async Task UndoMove(MakeMove move)
+
+    {
+        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
+        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
+        var enemyPlayer = currentGame.GetEnemyPlayer(currentPlayer);
+
+        // Create a new instance of ShotCommand and execute it
+        var shotCommand = new ShotCommand(currentPlayer, enemyPlayer, move.X, move.Y, move.TypeOfShip,
+            move.IsVertical, move.AttackBomb, _gameManager, Clients.Client(currentPlayer.Id),
+            Clients.Client(enemyPlayer.Id), enemyPlayer.OwnBoard);
+        if (enemyBoard.HaveAllShipsSunk) // if all enemy ships have sunk
+        {
+            await Clients.Client(currentPlayer.Id).SendAsync("GameOver", true); // send to players that game is over and send winner name
+    }
+
+    public async Task GiveMoveToPlayer()
+    {
+        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
+        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
+        var enemyPlayer = currentGame.GetEnemyPlayer(currentPlayer);
+        await Clients.Client(enemyPlayer.Id).SendAsync("YourTurn", "YourTurn");
+        {
+            await Clients.Client(currentPlayer.Id).SendAsync("YourTurn", "YourTurn");
+            return;
+        }
+
+        await Clients.Client(enemyPlayer.Id).SendAsync("YourTurn", "YourTurn");
+    }
+        
 
 
     // public override Task OnDisconnectedAsync(Exception exception)

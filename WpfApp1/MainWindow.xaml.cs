@@ -7,11 +7,14 @@ using Shared;
 using Shared.Transfer;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using Interaction = Microsoft.Xaml.Behaviors.Interaction;
 
 //// if you want to update UI state, you need to call your change in this
@@ -35,6 +38,7 @@ namespace WpfApp1
     /// </summary>
     public partial class MainWindow : Window
     {
+        private bool buttonClicked = false;
         private const int MAP_SIZE_X = 10;
         private const int MAP_SIZE_Y = 10;
         private static ShipFactory shipFactory = new ConcreteShipFactory();
@@ -49,6 +53,7 @@ namespace WpfApp1
         private Button[,] EnemyButtons = new Button[MAP_SIZE_X, MAP_SIZE_Y];
         private Dictionary<int, Style> EnemeyBoardStyles = new Dictionary<int, Style>(); // TODO: use momento design pattern
         private string gameState = ""; // change to class ?
+        private DispatcherTimer timer;
         private HubConnection _connection;
 
         public MainWindow()
@@ -158,11 +163,16 @@ namespace WpfApp1
             _connection.On<string>("SetupShips", HandleOnSetupShips);
             _connection.On<string>("GameStarted", HandleOnGameStarted);
             _connection.On<string>("YourTurn", HandleOnPlayerTurn);
-
-            // attacks
+            _connection.On<MoveResult>("UndoTurn", HandleOnPlayerUndoTurn);
+            //attacks
             _connection.On<MoveResult>("ReturnMove", HandleOnReturnMove);
             _connection.On<MoveResult>("OpponentResult", HandleOnOpponentResult);
-            _connection.On<SetupShipResponse>("SetupShipResponse", HandleOnSetShipResult);
+
+            _connection.On<MoveResult>("UndoReturnMove", HandleOnUndoReturnMove);
+            _connection.On<MoveResult>("UndoOpponentResult", HandleOnUndoOpponentResult);
+
+            _connection.On<SetupShipResponse>("SetupShipResponse", HandleOnSetShipResult); // need to add DTO or smt
+
             _connection.On<bool>("GameOver", HandleOnGameOver);
 
             // updates
@@ -249,6 +259,16 @@ namespace WpfApp1
                 button.Style = (Style)Resources[moveResult.IsHit ? "HitButton" : "NotHitButton"];
             });   
         }
+        private void HandleOnUndoOpponentResult(MoveResult moveResult)
+        {
+            string message = "Enemy undone his move!";
+            SendMessageToClient(message);
+            this.Dispatcher.Invoke(() => {
+                Button button = MyButtons[moveResult.Y, moveResult.X];
+                button.Content = null;
+                EnemeyBoardStyles[moveResult.X * 10 + moveResult.Y] = new Style();
+            });
+        }
 
         private void HandleOnReturnMove(MoveResult moveResult)
         {
@@ -271,6 +291,16 @@ namespace WpfApp1
                     button.Tag = null;
                 }
                 button.Style = newStyle;
+            });
+        }
+        private void HandleOnUndoReturnMove(MoveResult moveResult)
+        {
+            string message = "You undone your move";
+            SendMessageToClient(message);
+            this.Dispatcher.Invoke(() => {
+                Button button = EnemyButtons[moveResult.Y, moveResult.X];
+                button.Content = null;
+                EnemeyBoardStyles[moveResult.X * 10 + moveResult.Y] = new Style();
             });
         }
 
@@ -312,6 +342,56 @@ namespace WpfApp1
         {
             SendMessageToClient("Your Turn!");
             EnableEnemyBoard(true);
+        }
+
+        private async void HandleOnPlayerUndoTurn(MoveResult moveResult)
+        {
+            SendMessageToClient("You can undo turn!");
+            EnableEnemyBoard(false);
+            EnableUndo(true);
+
+            // Use a timer to set a timeout for completing the task
+            //var timeoutMilliseconds = 3000; // 3 seconds timeout
+            //var timer = new Timer(TimerCallback, null, timeoutMilliseconds, Timeout.Infinite);
+
+            //// Wait for the button to be clicked
+            //await Task.Delay(Timeout.Infinite); // This line effectively pauses until the timer callback sets the buttonClicked
+
+            //// Cancel the timer
+            //timer.Dispose();
+
+            //if (buttonClicked)
+            //{
+            //    await _connection.SendAsync("UndoMove", moveResult);
+            //    buttonClicked = false;
+            //}
+            //else
+            //{
+            //    EnableUndo(false);
+            //    await _connection.SendAsync("GiveMoveToPlayer");
+            //}
+            await Task.Delay(3000);
+
+            if (buttonClicked)
+            {
+
+                await _connection.SendAsync("UndoMove", moveResult);
+            }
+            if (!buttonClicked)
+            {
+                EnableUndo(false); // Attach an event handler
+                await _connection.SendAsync("GiveMoveToPlayer");
+            }
+
+            buttonClicked = false;
+        }
+
+        private void EnableUndo(bool enable)
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                Undo.IsEnabled = enable;
+            });
         }
 
         private void HandleOnGameStarted(string _)
@@ -567,7 +647,7 @@ namespace WpfApp1
 
         private void TestMode(object sender, RoutedEventArgs e)
         {
-            this.Dispatcher.Invoke(() =>
+            this.Dispatcher.Invoke(async () =>
             {
                 var newWindow = new TestModeWindow(_connection.ConnectionId);
                 newWindow.Show();
@@ -579,6 +659,20 @@ namespace WpfApp1
         private void TestClosed(object ?sender, EventArgs e)
         {
             TestModeButton.IsEnabled = true;
+        }
+
+        private void UndoAction(object sender, RoutedEventArgs e)
+        {
+            buttonClicked = true;
+
+            EnableUndo(false);
+
+            this.Dispatcher.Invoke(async () =>
+            {
+                await Task.Delay(2000);
+                EnableEnemyBoard(true);
+            });
+            
         }
     }
 }
