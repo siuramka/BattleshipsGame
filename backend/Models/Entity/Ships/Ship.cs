@@ -11,7 +11,7 @@ namespace backend.Models.Entity.Ships
         public int Size { get; set; }
         public bool IsVertical { get; set; }
         public ShipType ShipType { get; set; }
-        public abstract IAttackStrategy GetAttackStrategy();
+        public virtual IAttackStrategy GetAttackStrategy() => new DefaultAttackStrategy();
         public abstract BombFactory GetShipBombFactory();
 
         public Ship SetVertical()
