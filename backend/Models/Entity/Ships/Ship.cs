@@ -30,6 +30,8 @@ namespace backend.Models.Entity.Ships
             return new List<ShipCoordinate>(Coordinates);
         }
 
+
+
         public bool CanHitCoordinate(int x, int y)
         {
             return Coordinates.Exists(coord => coord.X == x && coord.Y == y && !coord.IsHit);

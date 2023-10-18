@@ -72,8 +72,14 @@ public class GameHub : Hub
         
         ShipGenerator shipGenerator = new ShipGenerator();
         var randomShips = shipGenerator.GenerateRandomShips();
+        List< SetupShipResponse> randomShipsTest = new List<SetupShipResponse>();
+        foreach (var randomShip in randomShips)
+        {
+            randomShipsTest.Add(new SetupShipResponse(true, randomShip.GetCoordinates(), randomShip.ShipType));
+            currentPlayer.OwnBoard.AddShip(randomShip);
+        }
 
-        await Clients.Client(currentPlayer.Id).SendAsync("RandomShipsResponse", randomShips);
+        await Clients.Client(currentPlayer.Id).SendAsync("RandomShipsResponse", randomShipsTest);
     }
 
     private async Task SetupShips(Game game)
