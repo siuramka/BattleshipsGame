@@ -32,5 +32,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapHub<GameHub>("/hub");
+app.MapHub<TestHub>("/testhub");
 
 app.Run();

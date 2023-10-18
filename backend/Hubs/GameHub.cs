@@ -246,79 +246,41 @@ public class GameHub : Hub
         await Clients.Client(_currentGame.Player1.Id).SendAsync("YourTurn", "YourTurn"); // Player1 starts the game
     }
 
-    public async Task EnterTestMode()
-    {
-        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
-        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
-
-        var enemyPlayer = currentGame.GetEnemyPlayer(currentPlayer);
-        var enemyShips = enemyPlayer.OwnBoard.GetShips();
-
-        List<ShipCoordinate> shipCoordinates = new List<ShipCoordinate>();
-        foreach (var ship in enemyShips)
-        {
-            foreach(var shipCoordinate in ship.GetCoordinates())
-            {
-                shipCoordinates.Add(shipCoordinate);
-            }
-        }
-
-        await SendTestModeShips(currentPlayer, new List<ShipCoordinate>(shipCoordinates));
-    }
-
-    private async Task SendTestModeShips(Player player, List<ShipCoordinate> ships)
-    {
-        await Clients.Client(player.Id).SendAsync("ReturnEnterTestMode", ships);
-    }
 
     //public async Task MakeMove(int x, int y, ShipType shipType, bool isVertical)
     public async Task MakeMove(MakeMove move)
-
     {
-        Ship ship = shipFactory.GetShip(move.TypeOfShip);
-        if (move.IsVertical)
+        GameFacade gameFascade = new GameFacade(Context.ConnectionId);
+        List<ShipCoordinate> hitShipCoordinates = gameFascade.MakeMove(move);
+        List<ShipCoordinate> missedCoordinates = gameFascade.GetMissedCoordinates();
+
+        foreach (var hitCoord in hitShipCoordinates)
         {
-            ship.SetVertical();
-        }
-
-        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
-        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
-        var enemyPlayer = currentGame.GetEnemyPlayer(currentPlayer);
-
-        var enemyBoard = enemyPlayer.OwnBoard;
-
-        enemyBoard.SetEnemyAttackShip(ship);
-        enemyBoard.ClearMissedCoordinates();//clear missed coordinates so they dont duplicate
-        List<ShipCoordinate> hitShipCoordinates = enemyBoard.GetHitCoordinates(move.X, move.Y, move.AttackBomb);
-        List<ShipCoordinate> missedCoordinates = enemyBoard.GetMissedCoordinates();
-
-        foreach(var hitCoord in hitShipCoordinates)
-        {
-            await Clients.Client(currentPlayer.Id).SendAsync("ReturnMove", new MoveResult(hitCoord.X, hitCoord.Y, true));//return to attacker if he hit ship or not
-            await Clients.Client(enemyPlayer.Id).SendAsync("OpponentResult", new MoveResult(hitCoord.X, hitCoord.Y, true));//return to who is getting attacked whenether or not his ship got hit
+            await Clients.Client(gameFascade.GetCurrentPlayer().Id).SendAsync("ReturnMove", new MoveResult(hitCoord.X, hitCoord.Y, true));//return to attacker if he hit ship or not
+            await Clients.Client(gameFascade.GetEnemyPlayer().Id).SendAsync("OpponentResult", new MoveResult(hitCoord.X, hitCoord.Y, true));//return to who is getting attacked whenether or not his ship got hit
         }
 
         foreach(var missCord in missedCoordinates)
         {
-            await Clients.Client(currentPlayer.Id).SendAsync("ReturnMove", new MoveResult(missCord.X, missCord.Y, false));//return to attacker if he hit ship or not
-            await Clients.Client(enemyPlayer.Id).SendAsync("OpponentResult", new MoveResult(missCord.X, missCord.Y, false));//return to who is getting attacked whenether or not his ship got hit
+            await Clients.Client(gameFascade.GetCurrentPlayer().Id).SendAsync("ReturnMove", new MoveResult(missCord.X, missCord.Y, false));//return to attacker if he hit ship or not
+            await Clients.Client(gameFascade.GetEnemyPlayer().Id).SendAsync("OpponentResult", new MoveResult(missCord.X, missCord.Y, false));//return to who is getting attacked whenether or not his ship got hit
         }
 
-        if (enemyBoard.HaveAllShipsSunk) // if all enemy ships have sunk
+        if (gameFascade.HasGameEnded()) 
         {
-            await Clients.Client(currentPlayer.Id).SendAsync("GameOver", true); // send to players that game is over and send winner name
-            await Clients.Client(enemyPlayer.Id).SendAsync("GameOver", false); // send to players that game is over and send winner name
+            await Clients.Client(gameFascade.GetCurrentPlayer().Id).SendAsync("GameOver", true); // send to players that game is over and send winner name
+            await Clients.Client(gameFascade.GetEnemyPlayer().Id).SendAsync("GameOver", false); // send to players that game is over and send winner name
             return;
         }
 
 
         if (hitShipCoordinates.Any())
         {
-            await Clients.Client(currentPlayer.Id).SendAsync("YourTurn", "YourTurn");
+            await Clients.Client(gameFascade.GetCurrentPlayer().Id).SendAsync("YourTurn", "YourTurn");
             return;
         }
 
-        await Clients.Client(enemyPlayer.Id).SendAsync("YourTurn", "YourTurn");
+        await Clients.Client(gameFascade.GetEnemyPlayer().Id).SendAsync("YourTurn", "YourTurn");
     }
 
 

@@ -28,18 +28,30 @@ namespace WpfApp1
         private const int MAP_SIZE_Y = 10;
         private Label[,] EnemyLabels = new Label[MAP_SIZE_X, MAP_SIZE_Y];
         private HubConnection _connection;
-        public TestModeWindow(HubConnection _connection)
+        private string _currentPlayerConnectionId;
+        public TestModeWindow(string currentPlayerConnectionId)
         {
+            _currentPlayerConnectionId = currentPlayerConnectionId;
             InitializeComponent();
+
             InitializeUi();
-            this._connection = _connection;
+            _connection = new HubConnectionBuilder()
+            .WithUrl("http://localhost:5220/testhub")
+            .Build();
             SetupConnection();
+            
+            Loaded += async (sender, e) => await ConnectToServer();
+        }
+
+        private async Task ConnectToServer()
+        {
+            await _connection.StartAsync();
+            await _connection.InvokeAsync("EnterTestMode", _currentPlayerConnectionId);
         }
 
         private void SetupConnection()
         {
             _connection.On<List<ShipCoordinate>>("ReturnEnterTestMode", HandleEnemyShips);
-            _connection.SendAsync("EnterTestMode");
         }
 
         private void InitializeUi()

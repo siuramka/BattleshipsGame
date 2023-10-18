@@ -569,7 +569,7 @@ namespace WpfApp1
         {
             this.Dispatcher.Invoke(() =>
             {
-                var newWindow = new TestModeWindow(_connection);
+                var newWindow = new TestModeWindow(_connection.ConnectionId);
                 newWindow.Show();
                 newWindow.Closed += TestClosed;
                 TestModeButton.IsEnabled = false;

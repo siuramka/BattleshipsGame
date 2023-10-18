@@ -8,9 +8,4 @@ public class Player
     public GameBoard OwnBoard { get; } = new();
     public bool HasSetupShips { get; set; } = false;
     public bool IsInTestMode { get; set; } = false;
-    //public GameBoard EnemyBoard { get; }
-
-
-
-
 }
