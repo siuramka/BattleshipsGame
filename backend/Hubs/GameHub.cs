@@ -3,6 +3,7 @@ using backend.Models.Entity;
 using backend.Models.Entity.Ships;
 using backend.Models.Entity.Ships.Decorators;
 using backend.Models.Entity.Ships.Factory;
+using backend.Models.Entity.Ships.Generator;
 using backend.Observer;
 using backend.Service;
 using Microsoft.AspNetCore.SignalR;
@@ -59,6 +60,16 @@ public class GameHub : Hub
         await Groups.AddToGroupAsync(game.Player2.Id, game.Group.Id);
         await Clients.Client(player.Id).SendAsync("WaitingForOpponent", player.Name);
         await SetupShips(game);
+    }
+
+    public async Task GenerateRandomShips()
+    {
+        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
+        
+        ShipGenerator shipGenerator = new ShipGenerator();
+        var randomShips = shipGenerator.GenerateRandomShips();
+
+        await Clients.Client(currentPlayer.Id).SendAsync("RandomShipsResponse", randomShips);
     }
 
     private async Task SetupShips(Game game)
