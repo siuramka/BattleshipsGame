@@ -67,7 +67,8 @@ public class GameHub : Hub
 
     public async Task GenerateRandomShips()
     {
-        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
+        GameFacade gameFacade = new GameFacade(Context.ConnectionId);
+        var currentPlayer = gameFacade.GetCurrentPlayer();
         
         ShipGenerator shipGenerator = new ShipGenerator();
         var randomShips = shipGenerator.GenerateRandomShips();
@@ -92,45 +93,28 @@ public class GameHub : Hub
     // _connection.SendAsync("SetShip", size, x, y, vertical);
     public async Task AddShipToPlayer(int x, int y, ShipType shipType, bool isVertical)
     {
-        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
-        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
-        if (currentPlayer == null || currentGame == null)
-        {
-            return;
-        }
 
-        //
-        // add handling for ship placement on different size ships etc...
-        //
-        Ship ship = shipFactory.GetShip(shipType);
+        GameFacade gameFacade = new GameFacade(Context.ConnectionId);
+        var currentPlayer = gameFacade.GetCurrentPlayer();
 
-        if (isVertical)
-        {
-            ship.SetVertical();
-        }
-        _gameService.CalculateShipCoordinates(ship, x, y);
-        currentPlayer.OwnBoard.AddShip(ship);
+        var addedShip = gameFacade.AddShipToPlayer(shipType, isVertical, x, y);
 
-
-        if (checkIfShipDoesNotFit(ship))
-        {
-            await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", new SetupShipResponse(false, ship.GetCoordinates(), shipType)); //send that cant place there
-        }
-
-        await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", new SetupShipResponse(true, ship.GetCoordinates(), shipType));
+        await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", new SetupShipResponse(true, addedShip.GetCoordinates(), shipType));
     }
 
     public async Task FlagShip(int x, int y)
     {
-        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
-        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
+        GameFacade gameFacade = new GameFacade(Context.ConnectionId);
+        var currentPlayer = gameFacade.GetCurrentPlayer();
+        var currentGame = gameFacade.GetCurrentGame();
+
         if (currentPlayer == null || currentGame == null)
         {
             return;
         }
-        var enemyPlayer = currentGame.GetEnemyPlayer(currentPlayer);
+        var enemyPlayer = gameFacade.GetEnemyPlayer();
 
-        List<Ship> ships = currentPlayer.OwnBoard.GetShips();
+        List<Ship> ships = gameFacade.GetShips();
         int index = 0;
         Ship? existingShip = getShipByCoordinate(ships, x, y, index);
 
@@ -146,14 +130,16 @@ public class GameHub : Hub
 
     public async Task SetShipYellowBackground(int x, int y)
     {
-        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
-        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
+        GameFacade gameFacade = new GameFacade(Context.ConnectionId);
+        var currentPlayer = gameFacade.GetCurrentPlayer();
+        var currentGame = gameFacade.GetCurrentGame();
+
         if (currentPlayer == null || currentGame == null)
         {
             return;
         }
 
-        List<Ship> ships = currentPlayer.OwnBoard.GetShips();
+        List<Ship> ships = gameFacade.GetShips();
         int index = 0;
         Ship? existingShip = getShipByCoordinate(ships, x, y, index);
 
@@ -169,14 +155,15 @@ public class GameHub : Hub
 
     public async Task SetShipBlueBorder(int x, int y)
     {
-        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
-        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
+        GameFacade gameFacade = new GameFacade(Context.ConnectionId);
+        var currentPlayer = gameFacade.GetCurrentPlayer();
+        var currentGame = gameFacade.GetCurrentGame();
         if (currentPlayer == null || currentGame == null)
         {
             return;
         }
 
-        List<Ship> ships = currentPlayer.OwnBoard.GetShips();
+        List<Ship> ships = gameFacade.GetShips();
         int index = 0;
         Ship? existingShip = getShipByCoordinate(ships, x, y, index);
 
@@ -215,24 +202,14 @@ public class GameHub : Hub
         return existingShip;
     }
 
-    private bool checkIfShipDoesNotFit(Ship ship)
-    {
-        foreach (ShipCoordinate coord in ship.GetCoordinates())
-        {
-            if(coord.X > 10 || coord.Y > 10)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
+
     public async Task DoneShipSetup()
     {
-        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
+        GameFacade gameFacade = new GameFacade(Context.ConnectionId);
+        var currentPlayer = gameFacade.GetCurrentPlayer();
+        var currentGame = gameFacade.GetCurrentGame();
 
         currentPlayer.HasSetupShips = true;
-
-        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
 
         if (currentGame.HavePlayersSetupShips())
         {
@@ -253,9 +230,10 @@ public class GameHub : Hub
     //public async Task MakeMove(int x, int y, ShipType shipType, bool isVertical)
     public async Task MakeMove(MakeMove move)
     {
-        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
-        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
-        var enemyPlayer = currentGame.GetEnemyPlayer(currentPlayer);
+        GameFacade gameFacade = new GameFacade(Context.ConnectionId);
+        var currentPlayer = gameFacade.GetCurrentPlayer();
+        var currentGame = gameFacade.GetCurrentGame();
+        var enemyPlayer = gameFacade.GetEnemyPlayer();
 
         // Create a new instance of ShotCommand and execute it
         var shotCommand = new ShotCommand(currentPlayer, enemyPlayer, move.X, move.Y, move.TypeOfShip,
@@ -263,39 +241,35 @@ public class GameHub : Hub
             Clients.Client(enemyPlayer.Id), enemyPlayer.OwnBoard);
 
         await shotCommand.Execute();
-        var enemyBoard = enemyPlayer.OwnBoard;
     }
 
     public async Task UndoMove(MakeMove move)
 
     {
-        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
-        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
-        var enemyPlayer = currentGame.GetEnemyPlayer(currentPlayer);
+        GameFacade gameFacade = new GameFacade(Context.ConnectionId);
+        var currentPlayer = gameFacade.GetCurrentPlayer();
+        var currentGame = gameFacade.GetCurrentGame();
+        var enemyPlayer = gameFacade.GetEnemyPlayer();
 
         // Create a new instance of ShotCommand and execute it
         var shotCommand = new ShotCommand(currentPlayer, enemyPlayer, move.X, move.Y, move.TypeOfShip,
             move.IsVertical, move.AttackBomb, _gameManager, Clients.Client(currentPlayer.Id),
             Clients.Client(enemyPlayer.Id), enemyPlayer.OwnBoard);
-        if (enemyBoard.HaveAllShipsSunk) // if all enemy ships have sunk
-        {
-            await Clients.Client(currentPlayer.Id).SendAsync("GameOver", true); // send to players that game is over and send winner name
+
+        await shotCommand.Undo();
+
     }
 
     public async Task GiveMoveToPlayer()
     {
-        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
-        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
-        var enemyPlayer = currentGame.GetEnemyPlayer(currentPlayer);
-        await Clients.Client(enemyPlayer.Id).SendAsync("YourTurn", "YourTurn");
-        {
-            await Clients.Client(currentPlayer.Id).SendAsync("YourTurn", "YourTurn");
-            return;
-        }
+        GameFacade gameFacade = new GameFacade(Context.ConnectionId);
+        var currentPlayer = gameFacade.GetCurrentPlayer();
+        var currentGame = gameFacade.GetCurrentGame();
+        var enemyPlayer = gameFacade.GetEnemyPlayer();
 
         await Clients.Client(enemyPlayer.Id).SendAsync("YourTurn", "YourTurn");
     }
-        
+
 
 
     // public override Task OnDisconnectedAsync(Exception exception)

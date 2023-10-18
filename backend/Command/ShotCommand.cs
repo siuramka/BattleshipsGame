@@ -5,6 +5,7 @@ using backend.Models.Entity;
 using Shared.Transfer;
 using Shared;
 using Microsoft.AspNetCore.SignalR;
+using backend.Service;
 
 namespace backend.Command
 {
@@ -50,7 +51,9 @@ namespace backend.Command
             enemyBoard.SetEnemyAttackShip(ship);
             enemyBoard.ClearMissedCoordinates();
 
-            List<ShipCoordinate> hitShipCoordinates = enemyBoard.GetHitCoordinates(x, y, attackBomb);
+            GameBoardService gameBoardService = new GameBoardService(enemyBoard);
+
+            List<ShipCoordinate> hitShipCoordinates = gameBoardService.GetHitCoordinates(x, y, attackBomb);
             List<ShipCoordinate> missedCoordinates = enemyBoard.GetMissedCoordinates();
 
             foreach (var hitCoord in hitShipCoordinates)

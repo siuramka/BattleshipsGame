@@ -4,12 +4,14 @@ using backend.Models.Entity.Ships;
 using Shared.Transfer;
 using backend.Service;
 using backend.Models.Entity;
+using Shared;
 
 namespace backend.Hubs
 {
     public class GameFacade
     {
         private GameManager _gameManager;
+        private GameService _gameService;
         private ShipFactory _shipFactory;
         private string CurrentPlayerConnectionId;
         
@@ -18,6 +20,7 @@ namespace backend.Hubs
             CurrentPlayerConnectionId = connectionId;
             _shipFactory = new ConcreteShipFactory();
             _gameManager = GameManager.Instance;
+            _gameService = new GameService();
         }
 
         public Player GetCurrentPlayer()
@@ -62,7 +65,27 @@ namespace backend.Hubs
 
             return enemyBoard.HaveAllShipsSunk;
         }
+        public List<Ship> GetShips()
+        {
+            return GetCurrentPlayer().OwnBoard.GetShips();
+        }
 
+        public Ship AddShipToPlayer(ShipType shipType, bool isVerticalShip, int x, int y)
+        {
+            Ship ship = _shipFactory.GetShip(shipType);
+
+            if (isVerticalShip)
+            {
+                ship.SetVertical();
+            }
+
+            _gameService.CalculateShipCoordinates(ship, x, y);
+
+            var currentPlayer = GetCurrentPlayer();
+            currentPlayer.OwnBoard.AddShip(ship);
+
+            return ship;
+        }
         public List<ShipCoordinate> GetMissedCoordinates()
         {
 

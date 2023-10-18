@@ -30,4 +30,15 @@ public class GameService
             }
         }
     }
+    public bool CheckIfShipDoesNotFit(Ship ship)
+    {
+        foreach (ShipCoordinate coord in ship.GetCoordinates())
+        {
+            if (coord.X > 10 || coord.Y > 10)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 }
