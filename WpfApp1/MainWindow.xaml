@@ -155,7 +155,7 @@
         </Grid>
 
 
-        <ListBox x:Name="MessagesListbox" Grid.Column="2" Margin="8,37,20,150" RenderTransformOrigin="0.5,0.5">
+        <ListBox x:Name="MessagesListbox" Grid.Column="2" Margin="8,37,20,182" RenderTransformOrigin="0.5,0.5">
             <ListBox.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>
@@ -233,8 +233,9 @@
         <Label Content="# - ship       X - ship hit       O - ship missed" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Bottom" Height="26" Width="236"/>
         <TextBlock x:Name="UserName" Grid.Column="2" HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="22" Width="236"><Run Language="lt-lt" Text="Username"/></TextBlock>
         <ComboBox x:Name="ShipAttacksBox" Margin="19,246,263,88" Grid.Column="2" IsEnabled="False"></ComboBox>
-        <ComboBox x:Name="BombAttackBox" Margin="239,248,23,88" Grid.Column="2" IsEnabled="False"></ComboBox>
-        <Button x:Name="TestModeButton" Grid.Column="2" Content="Test Mode" Margin="239,0,23,25" VerticalAlignment="Bottom" IsEnabled="False" Click="TestMode" x:FieldModifier="public" Height="34"/>
+        <ComboBox x:Name="BombAttackBox" Margin="239,223,23,113" Grid.Column="2" IsEnabled="False"></ComboBox>
+        <Button x:Name="TestModeButton" Grid.Column="2" Content="Test Mode" Margin="239,0,23,62" VerticalAlignment="Bottom" IsEnabled="False" Click="TestMode" x:FieldModifier="public" Height="34" RenderTransformOrigin="0.498,0.137"/>
+        <Button x:Name="Undo" Grid.Column="2" Content="Undo" HorizontalAlignment="Left" Margin="292,335,0,0" VerticalAlignment="Top" Height="36" Width="88" IsEnabled="False" Click="UndoAction"/>
 
     </Grid>
 </Window>

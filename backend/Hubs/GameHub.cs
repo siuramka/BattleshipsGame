@@ -1,4 +1,5 @@
-﻿using backend.Manager;
+﻿using backend.Command;
+using backend.Manager;
 using backend.Models.Entity;
 using backend.Models.Entity.Bombs;
 using backend.Models.Entity.Ships;
@@ -12,6 +13,7 @@ using Shared;
 using Shared.Transfer;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Numerics;
 
 namespace backend.Hubs;
 
@@ -173,51 +175,43 @@ public class GameHub : Hub
     public async Task MakeMove(MakeMove move)
 
     {
-        Ship ship = shipFactory.GetShip(move.TypeOfShip);
-        if (move.IsVertical)
-        {
-            ship.SetVertical();
-        }
-
         var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
         var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
         var enemyPlayer = currentGame.GetEnemyPlayer(currentPlayer);
 
-        var enemyBoard = enemyPlayer.OwnBoard;
+        // Create a new instance of ShotCommand and execute it
+        var shotCommand = new ShotCommand(currentPlayer, enemyPlayer, move.X, move.Y, move.TypeOfShip,
+            move.IsVertical, move.AttackBomb, _gameManager, Clients.Client(currentPlayer.Id),
+            Clients.Client(enemyPlayer.Id), enemyPlayer.OwnBoard);
 
-        enemyBoard.SetEnemyAttackShip(ship);
-        enemyBoard.ClearMissedCoordinates();//clear missed coordinates so they dont duplicate
-        List<ShipCoordinate> hitShipCoordinates = enemyBoard.GetHitCoordinates(move.X, move.Y, move.AttackBomb);
-        List<ShipCoordinate> missedCoordinates = enemyBoard.GetMissedCoordinates();
+        await shotCommand.Execute();
 
-        foreach(var hitCoord in hitShipCoordinates)
-        {
-            await Clients.Client(currentPlayer.Id).SendAsync("ReturnMove", new MoveResult(hitCoord.X, hitCoord.Y, true));//return to attacker if he hit ship or not
-            await Clients.Client(enemyPlayer.Id).SendAsync("OpponentResult", new MoveResult(hitCoord.X, hitCoord.Y, true));//return to who is getting attacked whenether or not his ship got hit
-        }
+    }
 
-        foreach(var missCord in missedCoordinates)
-        {
-            await Clients.Client(currentPlayer.Id).SendAsync("ReturnMove", new MoveResult(missCord.X, missCord.Y, false));//return to attacker if he hit ship or not
-            await Clients.Client(enemyPlayer.Id).SendAsync("OpponentResult", new MoveResult(missCord.X, missCord.Y, false));//return to who is getting attacked whenether or not his ship got hit
-        }
+    public async Task UndoMove(MakeMove move)
 
-        if (enemyBoard.HaveAllShipsSunk) // if all enemy ships have sunk
-        {
-            await Clients.Client(currentPlayer.Id).SendAsync("GameOver", true); // send to players that game is over and send winner name
-            await Clients.Client(enemyPlayer.Id).SendAsync("GameOver", false); // send to players that game is over and send winner name
-            return;
-        }
+    {
+        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
+        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
+        var enemyPlayer = currentGame.GetEnemyPlayer(currentPlayer);
 
+        // Create a new instance of ShotCommand and execute it
+        var shotCommand = new ShotCommand(currentPlayer, enemyPlayer, move.X, move.Y, move.TypeOfShip,
+            move.IsVertical, move.AttackBomb, _gameManager, Clients.Client(currentPlayer.Id),
+            Clients.Client(enemyPlayer.Id), enemyPlayer.OwnBoard);
 
-        if (hitShipCoordinates.Any())
-        {
-            await Clients.Client(currentPlayer.Id).SendAsync("YourTurn", "YourTurn");
-            return;
-        }
+        await shotCommand.Undo();
 
+    }
+
+    public async Task GiveMoveToPlayer()
+    {
+        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
+        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
+        var enemyPlayer = currentGame.GetEnemyPlayer(currentPlayer);
         await Clients.Client(enemyPlayer.Id).SendAsync("YourTurn", "YourTurn");
     }
+        
 
 
     // public override Task OnDisconnectedAsync(Exception exception)
