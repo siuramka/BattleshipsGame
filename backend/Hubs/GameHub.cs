@@ -1,13 +1,12 @@
 ﻿using backend.Command;
 using backend.Manager;
 using backend.Models.Entity;
-using backend.Models.Entity.Bombs;
 using backend.Models.Entity.Ships;
+using backend.Models.Entity.Ships.Decorators;
 using backend.Models.Entity.Ships.Factory;
+using backend.Models.Entity.Ships.Generator;
 using backend.Observer;
 using backend.Service;
-using backend.Strategies.Ships;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.SignalR;
 using Shared;
 using Shared.Transfer;
@@ -66,6 +65,16 @@ public class GameHub : Hub
         await SetupShips(game);
     }
 
+    public async Task GenerateRandomShips()
+    {
+        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
+        
+        ShipGenerator shipGenerator = new ShipGenerator();
+        var randomShips = shipGenerator.GenerateRandomShips();
+
+        await Clients.Client(currentPlayer.Id).SendAsync("RandomShipsResponse", randomShips);
+    }
+
     private async Task SetupShips(Game game)
     {
 
@@ -94,6 +103,7 @@ public class GameHub : Hub
         // add handling for ship placement on different size ships etc...
         //
         Ship ship = shipFactory.GetShip(shipType);
+
         if (isVertical)
         {
             ship.SetVertical();
@@ -104,17 +114,110 @@ public class GameHub : Hub
 
         if (checkIfShipDoesNotFit(ship))
         {
-            await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", new SetupShipResponse(false, ship.Coordinates, shipType)); //send that cant place there
+            await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", new SetupShipResponse(false, ship.GetCoordinates(), shipType)); //send that cant place there
         }
 
+        await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", new SetupShipResponse(true, ship.GetCoordinates(), shipType));
+    }
 
-        await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", new SetupShipResponse(true, ship.Coordinates, shipType));
+    public async Task FlagShip(int x, int y)
+    {
+        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
+        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
+        if (currentPlayer == null || currentGame == null)
+        {
+            return;
+        }
+        var enemyPlayer = currentGame.GetEnemyPlayer(currentPlayer);
 
+        List<Ship> ships = currentPlayer.OwnBoard.GetShips();
+        int index = 0;
+        Ship? existingShip = getShipByCoordinate(ships, x, y, index);
+
+        if (existingShip == null)
+        {
+            return;
+        }
+
+        existingShip = new FlagDecorator(existingShip);
+        await Clients.Client(currentPlayer.Id).SendAsync("AddFlags", existingShip.GetCoordinates());
+        await Clients.Client(enemyPlayer.Id).SendAsync("AddEnemyFlags", existingShip.GetCoordinates());
+    }
+
+    public async Task SetShipYellowBackground(int x, int y)
+    {
+        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
+        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
+        if (currentPlayer == null || currentGame == null)
+        {
+            return;
+        }
+
+        List<Ship> ships = currentPlayer.OwnBoard.GetShips();
+        int index = 0;
+        Ship? existingShip = getShipByCoordinate(ships, x, y, index);
+
+        if (existingShip == null)
+        {
+            return;
+        }
+
+        Ship decoratedShip = new ColoredDecorator(existingShip, Color.Yellow);
+
+        await Clients.Client(currentPlayer.Id).SendAsync("RerenderCoordinates", decoratedShip.GetCoordinates());
+    }
+
+    public async Task SetShipBlueBorder(int x, int y)
+    {
+        var currentPlayer = _gameManager.GetPlayer(Context.ConnectionId);
+        var currentGame = _gameManager.GetPlayerGame(Context.ConnectionId);
+        if (currentPlayer == null || currentGame == null)
+        {
+            return;
+        }
+
+        List<Ship> ships = currentPlayer.OwnBoard.GetShips();
+        int index = 0;
+        Ship? existingShip = getShipByCoordinate(ships, x, y, index);
+
+        if (existingShip == null)
+        {
+            return;
+        }
+        
+        Ship decoratedShip = new BorderDecorator(existingShip, Color.Blue);
+
+        await Clients.Client(currentPlayer.Id).SendAsync("RerenderCoordinates", decoratedShip.GetCoordinates());
+    }
+
+    private Ship? getShipByCoordinate(List<Ship> ships, int x, int y, int index = 0) 
+    {
+        Ship? existingShip = null;
+        foreach (Ship ship in ships)
+        {
+            foreach (ShipCoordinate coordinate in ship.GetCoordinates())
+            {
+                if (coordinate.X == x && coordinate.Y == y)
+                {
+                    existingShip = ship;
+                    break;
+                }
+            }
+
+            if (existingShip != null)
+            {
+                break;
+            }
+
+            index++;
+        }
+
+        return existingShip;
     }
 
     private bool checkIfShipDoesNotFit(Ship ship)
     {
-        foreach (ShipCoordinate coord in ship.Coordinates)
+        foreach (ShipCoordinate coord in ship.GetCoordinates())
         {
             if(coord.X > 10 || coord.Y > 10)
             {
@@ -157,7 +260,7 @@ public class GameHub : Hub
         List<ShipCoordinate> shipCoordinates = new List<ShipCoordinate>();
         foreach (var ship in enemyShips)
         {
-            foreach(var shipCoordinate in ship.Coordinates)
+            foreach(var shipCoordinate in ship.GetCoordinates())
             {
                 shipCoordinates.Add(shipCoordinate);
             }
