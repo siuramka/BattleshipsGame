@@ -179,6 +179,7 @@ namespace WpfApp1
             _connection.On<List<ShipCoordinate>>("AddFlags", HandleAddFlags);
             _connection.On<List<ShipCoordinate>>("AddEnemyFlags", HandleAddEnemyFlags);
             _connection.On<List<ShipCoordinate>>("RerenderCoordinates", HandleRerenderCoordinates);
+            _connection.On<List<SetupShipResponse>>("RandomShipsResponse", HandleOnRandomSetShips);
         }
 
         private void HandleRerenderCoordinates(List<ShipCoordinate> coordinates)
@@ -421,6 +422,7 @@ namespace WpfApp1
 
                 ActionButton.Content = "Ready";
                 ActionButton.IsEnabled = true;
+                RandomShips.IsEnabled = true;
 
                 EnableMyBoard(true);
                 EnableEnemyBoard(false);
@@ -673,6 +675,20 @@ namespace WpfApp1
                 EnableEnemyBoard(true);
             });
             
+        }
+
+        private void PlaceRandomShipAction(object sender, RoutedEventArgs e)
+        {
+            _connection.InvokeAsync("GenerateRandomShips");
+            RandomShips.IsEnabled = false;
+        }
+
+        private void HandleOnRandomSetShips(List<SetupShipResponse> setupShipsResponse)
+        {
+            foreach (SetupShipResponse setupShipResponse in setupShipsResponse)
+            {
+                HandleOnSetShipResult(setupShipResponse);
+            }
         }
     }
 }
