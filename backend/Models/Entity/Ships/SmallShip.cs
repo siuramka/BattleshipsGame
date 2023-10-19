@@ -8,6 +8,32 @@ namespace backend.Models.Entity.Ships;
 
 public class SmallShip : Ship
 {
+    public SmallShip()
+    {
+    }
+
+    public SmallShip(SmallShip ship) {
+        Size = ship.Size;
+        IsVertical = ship.IsVertical;
+        ShipType = ship.ShipType;
+        foreach(ShipCoordinate coordinate in ship.Coordinates)
+        {
+            AddCoordinate(coordinate);
+        }
+    }
+
+    public override Ship DeepCopy()
+    {
+        SmallShip ship = new SmallShip(this);
+        List<ShipCoordinate> coords = GetCoordinates();
+        RemoveAllCoordinates();
+        foreach (ShipCoordinate coordinate in coords)
+        {
+            AddCoordinate(coordinate);
+        }
+        return ship;
+    }
+
     public override IAttackStrategy GetAttackStrategy()
     {
         return new SmallBombAttackStrategy();
@@ -16,5 +42,10 @@ public class SmallShip : Ship
     public override BombFactory GetShipBombFactory()
     {
         return new SmallBombFactory();
+    }
+
+    public override Ship ShallowCopy()
+    {
+        return new SmallShip(this);
     }
 }

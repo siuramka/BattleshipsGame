@@ -6,6 +6,14 @@ namespace backend.Models.Entity.Ships.Decorators
     public class FlagDecorator : Ship
     {
         private Ship _ship;
+
+        public FlagDecorator(FlagDecorator decorator)
+        {
+            _ship = decorator._ship;
+            ShipType = decorator.ShipType;
+            IsVertical = decorator._ship.IsVertical;
+            Size = decorator._ship.Size;
+        }
         public FlagDecorator(Ship ship)
         {
             _ship = ship;
@@ -43,6 +51,16 @@ namespace backend.Models.Entity.Ships.Decorators
             }
 
             return coords;
+        }
+
+        public override Ship DeepCopy()
+        {
+            return new FlagDecorator(this);
+        }
+
+        public override Ship ShallowCopy()
+        {
+            return new FlagDecorator(this);
         }
     }
 }

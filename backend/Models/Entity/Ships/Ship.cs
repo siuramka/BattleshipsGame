@@ -7,7 +7,7 @@ namespace backend.Models.Entity.Ships
 {
     public abstract class Ship
     {
-        private List<ShipCoordinate> Coordinates = new List<ShipCoordinate>();
+        public List<ShipCoordinate> Coordinates { get; private set; } = new List<ShipCoordinate>();
         public int Size { get; set; }
         public bool IsVertical { get; set; }
         public ShipType ShipType { get; set; }
@@ -25,9 +25,19 @@ namespace backend.Models.Entity.Ships
             Coordinates.Add(new ShipCoordinate(x, y));
         }
 
+        public virtual void AddCoordinate(ShipCoordinate coordinate)
+        {
+            Coordinates.Add(coordinate);
+        }
+
         public virtual List<ShipCoordinate> GetCoordinates()
         {
             return new List<ShipCoordinate>(Coordinates);
+        }
+
+        public void RemoveAllCoordinates()
+        {
+            Coordinates = new();
         }
 
         public bool CanHitCoordinate(int x, int y)
@@ -62,5 +72,8 @@ namespace backend.Models.Entity.Ships
             }
             
         }
+
+        public abstract Ship ShallowCopy();
+        public abstract Ship DeepCopy();
     }
 }

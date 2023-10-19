@@ -4,7 +4,7 @@ namespace backend.Models.Entity.Ships
 {
     public class MediumShipBuilder : IShipBuilder
     {
-        private MediumShip mediumShip = new MediumShip();
+        private MediumShip mediumShip = new();
 
         public Ship Build()
         {

@@ -8,6 +8,15 @@ namespace backend.Models.Entity.Ships.Decorators
     {
         private Ship _ship;
         private Color _color;
+
+        public ColoredDecorator(ColoredDecorator decorator)
+        {
+            _ship = decorator._ship;
+            _color = decorator._color;
+            ShipType = decorator.ShipType;
+            IsVertical = decorator._ship.IsVertical;
+            Size = decorator._ship.Size;
+        }
         public ColoredDecorator(Ship ship, Color color)
         {
             _ship = ship;
@@ -46,6 +55,16 @@ namespace backend.Models.Entity.Ships.Decorators
             }
 
             return coords;
+        }
+
+        public override Ship DeepCopy()
+        {
+            return new ColoredDecorator(this);
+        }
+
+        public override Ship ShallowCopy()
+        {
+            return new ColoredDecorator(this);
         }
     }
 }

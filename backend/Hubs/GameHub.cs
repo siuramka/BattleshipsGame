@@ -148,9 +148,9 @@ public class GameHub : Hub
             return;
         }
 
-        Ship decoratedShip = new ColoredDecorator(existingShip, Color.Yellow);
+        existingShip = new ColoredDecorator(existingShip, Color.Yellow);
 
-        await Clients.Client(currentPlayer.Id).SendAsync("RerenderCoordinates", decoratedShip.GetCoordinates());
+        await Clients.Client(currentPlayer.Id).SendAsync("RerenderCoordinates", existingShip.GetCoordinates());
     }
 
     public async Task SetShipBlueBorder(int x, int y)
@@ -171,10 +171,10 @@ public class GameHub : Hub
         {
             return;
         }
-        
-        Ship decoratedShip = new BorderDecorator(existingShip, Color.Blue);
 
-        await Clients.Client(currentPlayer.Id).SendAsync("RerenderCoordinates", decoratedShip.GetCoordinates());
+        existingShip = new BorderDecorator(existingShip, Color.Blue);
+
+        await Clients.Client(currentPlayer.Id).SendAsync("RerenderCoordinates", existingShip.GetCoordinates());
     }
 
     private Ship? getShipByCoordinate(List<Ship> ships, int x, int y, int index = 0) 
@@ -199,7 +199,7 @@ public class GameHub : Hub
             index++;
         }
 
-        return existingShip;
+        return existingShip?.DeepCopy();
     }
 
 
