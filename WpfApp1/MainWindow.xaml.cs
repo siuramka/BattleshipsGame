@@ -155,6 +155,14 @@ namespace WpfApp1
         {
             await _connection.StartAsync();
             await _connection.InvokeAsync("JoinGame");
+
+            string message = "Player is connected";
+
+            IMessage debugger = new DebuggerMessages();
+            debugger.SendMessage(message);
+
+            IMessage serverMessages = new ServerMessagesAdapter(_connection);
+            serverMessages.SendMessage(message);
         }
 
         private void SetupListeners()

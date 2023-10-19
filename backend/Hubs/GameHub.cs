@@ -107,6 +107,16 @@ public class GameHub : Hub
 
         await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", new SetupShipResponse(true, addedShip.GetCoordinates(), shipType));
     }
+    
+    public async Task ClientMessage(string message)
+    {
+        GameFacade gameFacade = new GameFacade(Context.ConnectionId);
+        var currentPlayer = gameFacade.GetCurrentPlayer();
+
+        Console.WriteLine(message);
+
+        await Clients.Client(currentPlayer.Id).SendAsync("ServerDebuggerMessageResponse", message + " (succeeded)");
+    }
 
     public async Task FlagShip(int x, int y)
     {
