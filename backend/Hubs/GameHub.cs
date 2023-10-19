@@ -20,17 +20,6 @@ namespace backend.Hubs;
 
 public class GameHub : Hub
 {
-    private GameManager
-        _gameManager = GameManager.Instance; //singleton because each new connection creates new hub instance
-
-    private GameService _gameService;
-    private ShipFactory shipFactory;
-    public GameHub() : base()
-    {
-        _gameService = new();
-        shipFactory = new ConcreteShipFactory();
-    }
-
     private class HitObject
     {
         public int Row { get; set; }
@@ -40,22 +29,22 @@ public class GameHub : Hub
 
     public async Task JoinGame()
     {
-        var playerName = _gameManager.EmptyGameExist() ? "Player2" : "Player1"; // Player1 if hes the first to join the game
+        GameFacade gameFacade = new GameFacade(Context.ConnectionId);
+        var playerName = gameFacade.EmptyGameExist() ? "Player2" : "Player1"; // Player1 if hes the first to join the game
         var player = new Player { Id = Context.ConnectionId, Name = playerName };
         Game game = new Game();
 
-        if (!_gameManager.EmptyGameExist()) // if no empty games
+        if (!gameFacade.EmptyGameExist()) // if no empty games
         {
             game.Player1 = player;
             var groupId = Guid.NewGuid().ToString();
             game.Group.Id = groupId;
-            _gameManager.Games.Add(game);
+            gameFacade.AddGame(game);
             await Clients.Client(player.Id).SendAsync("WaitingForOpponent", player.Name);
             return;
         }
 
-        game = _gameManager.Games.First(x =>
-            x.WaitingForOpponent == true); //get the first game where player is waiting for an opponent
+        game = gameFacade.GetFirstEmptyGame(); //get the first game where player is waiting for an opponent
         game.Player2 = player;
         game.WaitingForOpponent = false;
 
@@ -68,18 +57,7 @@ public class GameHub : Hub
     public async Task GenerateRandomShips()
     {
         GameFacade gameFacade = new GameFacade(Context.ConnectionId);
-        var currentPlayer = gameFacade.GetCurrentPlayer();
-        
-        ShipGenerator shipGenerator = new ShipGenerator();
-        var randomShips = shipGenerator.GenerateRandomShips();
-        List< SetupShipResponse> randomShipsTest = new List<SetupShipResponse>();
-        foreach (var randomShip in randomShips)
-        {
-            randomShipsTest.Add(new SetupShipResponse(true, randomShip.GetCoordinates(), randomShip.ShipType));
-            currentPlayer.OwnBoard.AddShip(randomShip);
-        }
-
-        await Clients.Client(currentPlayer.Id).SendAsync("RandomShipsResponse", randomShipsTest);
+        await Clients.Client(gameFacade.GetCurrentPlayer().Id).SendAsync("RandomShipsResponse", gameFacade.SetupPlayerRandomShips());
     }
 
     private async Task SetupShips(Game game)
@@ -174,6 +152,7 @@ public class GameHub : Hub
         GameFacade gameFacade = new GameFacade(Context.ConnectionId);
         var currentPlayer = gameFacade.GetCurrentPlayer();
         var currentGame = gameFacade.GetCurrentGame();
+
         if (currentPlayer == null || currentGame == null)
         {
             return;
@@ -248,12 +227,11 @@ public class GameHub : Hub
     {
         GameFacade gameFacade = new GameFacade(Context.ConnectionId);
         var currentPlayer = gameFacade.GetCurrentPlayer();
-        var currentGame = gameFacade.GetCurrentGame();
         var enemyPlayer = gameFacade.GetEnemyPlayer();
 
         // Create a new instance of ShotCommand and execute it
         var shotCommand = new ShotCommand(currentPlayer, enemyPlayer, move.X, move.Y, move.TypeOfShip,
-            move.IsVertical, move.AttackBomb, _gameManager, Clients.Client(currentPlayer.Id),
+            move.IsVertical, move.AttackBomb, GameManager.Instance, Clients.Client(currentPlayer.Id),
             Clients.Client(enemyPlayer.Id), enemyPlayer.OwnBoard);
 
         await shotCommand.Execute();
@@ -264,12 +242,11 @@ public class GameHub : Hub
     {
         GameFacade gameFacade = new GameFacade(Context.ConnectionId);
         var currentPlayer = gameFacade.GetCurrentPlayer();
-        var currentGame = gameFacade.GetCurrentGame();
         var enemyPlayer = gameFacade.GetEnemyPlayer();
 
         // Create a new instance of ShotCommand and execute it
         var shotCommand = new ShotCommand(currentPlayer, enemyPlayer, move.X, move.Y, move.TypeOfShip,
-            move.IsVertical, move.AttackBomb, _gameManager, Clients.Client(currentPlayer.Id),
+            move.IsVertical, move.AttackBomb, GameManager.Instance, Clients.Client(currentPlayer.Id),
             Clients.Client(enemyPlayer.Id), enemyPlayer.OwnBoard);
 
         await shotCommand.Undo();
@@ -279,8 +256,7 @@ public class GameHub : Hub
     public async Task GiveMoveToPlayer()
     {
         GameFacade gameFacade = new GameFacade(Context.ConnectionId);
-        var currentPlayer = gameFacade.GetCurrentPlayer();
-        var currentGame = gameFacade.GetCurrentGame();
+
         var enemyPlayer = gameFacade.GetEnemyPlayer();
 
         await Clients.Client(enemyPlayer.Id).SendAsync("YourTurn", "YourTurn");

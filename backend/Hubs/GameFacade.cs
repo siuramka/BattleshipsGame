@@ -5,6 +5,7 @@ using Shared.Transfer;
 using backend.Service;
 using backend.Models.Entity;
 using Shared;
+using backend.Models.Entity.Ships.Generator;
 
 namespace backend.Hubs
 {
@@ -13,14 +14,16 @@ namespace backend.Hubs
         private GameManager _gameManager;
         private GameService _gameService;
         private ShipFactory _shipFactory;
+        private ShipGenerator _shipGenerator;
         private string CurrentPlayerConnectionId;
-        
+
         public GameFacade(string connectionId)
         {
             CurrentPlayerConnectionId = connectionId;
             _shipFactory = new ConcreteShipFactory();
             _gameManager = GameManager.Instance;
             _gameService = new GameService();
+            _shipGenerator = new ShipGenerator();
         }
 
         public Player GetCurrentPlayer()
@@ -111,5 +114,31 @@ namespace backend.Hubs
 
             return shipCoordinates;
         }
+        public Game GetFirstEmptyGame()
+        {
+            return _gameManager.Games.First(x => x.WaitingForOpponent == true);
+        }
+        public void AddGame(Game game)
+        {
+            _gameManager.Games.Add(game);
+        }
+        public bool EmptyGameExist()
+        {
+            return _gameManager.EmptyGameExist();
+        }
+        public List<SetupShipResponse> SetupPlayerRandomShips()
+        {
+            var currentPlayer = GetCurrentPlayer();
+            var randomShips = _shipGenerator.GenerateRandomShips();
+            List<SetupShipResponse> randomShipsTest = new List<SetupShipResponse>();
+            foreach (var randomShip in randomShips)
+            {
+                randomShipsTest.Add(new SetupShipResponse(true, randomShip.GetCoordinates(), randomShip.ShipType));
+                currentPlayer.OwnBoard.AddShip(randomShip);
+            }
+
+            return randomShipsTest;
+        }
+
     }
 }
