@@ -1,4 +1,5 @@
 ﻿using backend.Models.Entity;
+using backend.Models.Entity.GameBoardExtensions;
 using backend.Models.Entity.Ships;
 using backend.Models.Entity.Ships.Factory;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -7,6 +8,7 @@ using Shared;
 using Shared.Transfer;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -188,6 +190,7 @@ namespace WpfApp1
             _connection.On<List<ShipCoordinate>>("AddEnemyFlags", HandleAddEnemyFlags);
             _connection.On<List<ShipCoordinate>>("RerenderCoordinates", HandleRerenderCoordinates);
             _connection.On<List<SetupShipResponse>>("RandomShipsResponse", HandleOnRandomSetShips);
+            _connection.On<Shared.Color, string>("SetTheme", HandleThemeMode);
         }
 
         private void HandleRerenderCoordinates(List<ShipCoordinate> coordinates)
@@ -219,6 +222,10 @@ namespace WpfApp1
                     return Brushes.Yellow;
                 case Shared.Color.Blue:
                     return Brushes.Blue;
+                case Shared.Color.Black:
+                    return Brushes.Black;
+                case Shared.Color.White:
+                    return Brushes.White;
                 default:
                     return null;
             }
@@ -697,6 +704,21 @@ namespace WpfApp1
             {
                 HandleOnSetShipResult(setupShipResponse);
             }
+        }
+
+        private void ThemeMode(object sender, RoutedEventArgs e)
+        {
+            _connection.InvokeAsync("SetTheme");
+        }
+
+        private void HandleThemeMode(Shared.Color color, string text)
+        {
+            SolidColorBrush? backgroundColor = ParseColorToBrush(color);
+            this.Dispatcher.Invoke(async () =>
+            {
+                board.Background = backgroundColor;
+                Theme.Content = text;
+            });
         }
     }
 }

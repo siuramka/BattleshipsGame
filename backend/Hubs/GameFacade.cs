@@ -6,6 +6,8 @@ using backend.Service;
 using backend.Models.Entity;
 using Shared;
 using backend.Models.Entity.Ships.Generator;
+using backend.Models.Entity.GameBoardExtensions;
+using System.Numerics;
 
 namespace backend.Hubs
 {
@@ -140,5 +142,19 @@ namespace backend.Hubs
             return randomShipsTest;
         }
 
+        public ThemeAbstraction SetupTheme()
+        {
+            var currentPlayer = GetCurrentPlayer();
+
+            if(currentPlayer.OwnBoard.theme.Implementor is ConcreteImplementorLight)
+            {
+                currentPlayer.OwnBoard.theme.Implementor = new ConcreteImplementorDark();
+            }
+            else
+            {
+                currentPlayer.OwnBoard.theme.Implementor = new ConcreteImplementorLight();
+            }
+            return currentPlayer.OwnBoard.theme;
+        }
     }
 }

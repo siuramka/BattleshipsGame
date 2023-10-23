@@ -1,4 +1,5 @@
 ﻿using backend.Models.Entity.Bombs;
+using backend.Models.Entity.GameBoardExtensions;
 using backend.Models.Entity.Ships;
 using backend.Strategies;
 using Shared;
@@ -11,6 +12,7 @@ public class GameBoard
     private List<Ship> _battleships = new();
     private HashSet<ShipCoordinate> _missedCoordinates = new();
     private Ship? _enemyAttackShip;
+    public ThemeAbstraction theme { get; set; }
 
     public int maxSizeX { get { return 10; } }
     public int maxSizeY { get { return 10; } }

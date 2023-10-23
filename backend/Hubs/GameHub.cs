@@ -1,6 +1,7 @@
 ﻿using backend.Command;
 using backend.Manager;
 using backend.Models.Entity;
+using backend.Models.Entity.GameBoardExtensions;
 using backend.Models.Entity.Ships;
 using backend.Models.Entity.Ships.Decorators;
 using backend.Models.Entity.Ships.Factory;
@@ -13,6 +14,7 @@ using Shared.Transfer;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace backend.Hubs;
 
@@ -34,6 +36,12 @@ public class GameHub : Hub
         var player = new Player { Id = Context.ConnectionId, Name = playerName };
         Game game = new Game();
 
+        ThemeAbstraction themeAbstraction = new ThemeAbstraction();
+        player.OwnBoard.theme = themeAbstraction;
+        Color background = themeAbstraction.Background();
+        string text = themeAbstraction.Text();
+        await Clients.Client(player.Id).SendAsync("SetTheme", background, text);
+
         if (!gameFacade.EmptyGameExist()) // if no empty games
         {
             game.Player1 = player;
@@ -41,6 +49,7 @@ public class GameHub : Hub
             game.Group.Id = groupId;
             gameFacade.AddGame(game);
             await Clients.Client(player.Id).SendAsync("WaitingForOpponent", player.Name);
+
             return;
         }
 
@@ -52,12 +61,24 @@ public class GameHub : Hub
         await Groups.AddToGroupAsync(game.Player2.Id, game.Group.Id);
         await Clients.Client(player.Id).SendAsync("WaitingForOpponent", player.Name);
         await SetupShips(game);
+
+
+        
     }
 
     public async Task GenerateRandomShips()
     {
         GameFacade gameFacade = new GameFacade(Context.ConnectionId);
         await Clients.Client(gameFacade.GetCurrentPlayer().Id).SendAsync("RandomShipsResponse", gameFacade.SetupPlayerRandomShips());
+    }
+
+    public async Task SetTheme()
+    {
+        GameFacade gameFacade = new GameFacade(Context.ConnectionId);
+        ThemeAbstraction themeAbstraction = gameFacade.SetupTheme();
+        Color background = themeAbstraction.Background();
+        string text = themeAbstraction.Text();
+        await Clients.Client(gameFacade.GetCurrentPlayer().Id).SendAsync("SetTheme", background, text);
     }
 
     private async Task SetupShips(Game game)

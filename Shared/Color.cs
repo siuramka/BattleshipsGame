@@ -5,5 +5,7 @@
         Inherit,
         Blue,
         Yellow,
+        Black,
+        White
     }
 }
