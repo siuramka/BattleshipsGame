@@ -40,7 +40,8 @@ public class GameHub : Hub
         player.OwnBoard.theme = themeAbstraction;
         Color background = themeAbstraction.Background();
         string text = themeAbstraction.Text();
-        await Clients.Client(player.Id).SendAsync("SetTheme", background, text);
+        Color textColor = themeAbstraction.TextColor();
+        await Clients.Client(player.Id).SendAsync("SetTheme", background, text, textColor);
 
         if (!gameFacade.EmptyGameExist()) // if no empty games
         {
@@ -62,8 +63,6 @@ public class GameHub : Hub
         await Clients.Client(player.Id).SendAsync("WaitingForOpponent", player.Name);
         await SetupShips(game);
 
-
-        
     }
 
     public async Task GenerateRandomShips()
@@ -78,7 +77,8 @@ public class GameHub : Hub
         ThemeAbstraction themeAbstraction = gameFacade.SetupTheme();
         Color background = themeAbstraction.Background();
         string text = themeAbstraction.Text();
-        await Clients.Client(gameFacade.GetCurrentPlayer().Id).SendAsync("SetTheme", background, text);
+        Color textColor = themeAbstraction.TextColor();
+        await Clients.Client(gameFacade.GetCurrentPlayer().Id).SendAsync("SetTheme", background, text, textColor);
     }
 
     private async Task SetupShips(Game game)
