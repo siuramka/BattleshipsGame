@@ -9,5 +9,7 @@ namespace backend.Models.Entity.GameBoardExtensions
         public abstract string Text();
 
         public abstract Color TextColor();
+
+        public abstract Color ButtonBackgroundColor();
     }
 }

@@ -11,11 +11,15 @@ namespace backend.Models.Entity.GameBoardExtensions
 
         public override string Text()
         {
-            return "turn light theme";
+            return "Turn light theme";
         }
         public override Color TextColor()
         {
             return Color.White;
+        }
+        public override Color ButtonBackgroundColor()
+        {
+            return Color.Gray;
         }
     }
 }

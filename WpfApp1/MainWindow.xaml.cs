@@ -190,7 +190,7 @@ namespace WpfApp1
             _connection.On<List<ShipCoordinate>>("AddEnemyFlags", HandleAddEnemyFlags);
             _connection.On<List<ShipCoordinate>>("RerenderCoordinates", HandleRerenderCoordinates);
             _connection.On<List<SetupShipResponse>>("RandomShipsResponse", HandleOnRandomSetShips);
-            _connection.On<Shared.Color, string, Shared.Color>("SetTheme", HandleThemeMode);
+            _connection.On<Shared.Color, string, Shared.Color, Shared.Color>("SetTheme", HandleThemeMode);
         }
 
         private void HandleRerenderCoordinates(List<ShipCoordinate> coordinates)
@@ -226,6 +226,8 @@ namespace WpfApp1
                     return Brushes.Black;
                 case Shared.Color.White:
                     return Brushes.White;
+                case Shared.Color.Gray:
+                    return Brushes.Gray;
                 default:
                     return null;
             }
@@ -711,16 +713,22 @@ namespace WpfApp1
             _connection.InvokeAsync("SetTheme");
         }
 
-        private void HandleThemeMode(Shared.Color color, string text, Shared.Color textColor)
+        private void HandleThemeMode(Shared.Color color, string text, Shared.Color textColor, Shared.Color buttonBackgroundColor)
         {
             SolidColorBrush? backgroundColor = ParseColorToBrush(color);
             SolidColorBrush? textColorF = ParseColorToBrush(textColor);
+            SolidColorBrush? buttonBackground = ParseColorToBrush(buttonBackgroundColor);
             this.Dispatcher.Invoke(async () =>
             {
                 board.Background = backgroundColor;
                 Theme.Content = text;
                 UserName.Foreground = textColorF;
                 Histogram.Foreground = textColorF;
+                Theme.Background = buttonBackground;
+                TestModeButton.Background = buttonBackground;
+                RandomShips.Background = buttonBackground;
+                MessagesListbox.Background = buttonBackground;
+                MessagesListbox.Foreground = textColorF;
             });
         }
     }

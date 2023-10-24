@@ -29,5 +29,9 @@ namespace backend.Models.Entity.GameBoardExtensions
         {
             return implementor.TextColor();
         }
+        public virtual Color ButtonBackgroundColor()
+        {
+            return implementor.ButtonBackgroundColor();
+        }
     }
 }

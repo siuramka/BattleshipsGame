@@ -41,7 +41,8 @@ public class GameHub : Hub
         Color background = themeAbstraction.Background();
         string text = themeAbstraction.Text();
         Color textColor = themeAbstraction.TextColor();
-        await Clients.Client(player.Id).SendAsync("SetTheme", background, text, textColor);
+        Color buttonBackgroundColor = themeAbstraction.ButtonBackgroundColor();
+        await Clients.Client(player.Id).SendAsync("SetTheme", background, text, textColor, buttonBackgroundColor);
 
         if (!gameFacade.EmptyGameExist()) // if no empty games
         {
@@ -78,7 +79,8 @@ public class GameHub : Hub
         Color background = themeAbstraction.Background();
         string text = themeAbstraction.Text();
         Color textColor = themeAbstraction.TextColor();
-        await Clients.Client(gameFacade.GetCurrentPlayer().Id).SendAsync("SetTheme", background, text, textColor);
+        Color buttonBackgroundColor = themeAbstraction.ButtonBackgroundColor();
+        await Clients.Client(gameFacade.GetCurrentPlayer().Id).SendAsync("SetTheme", background, text, textColor, buttonBackgroundColor);
     }
 
     private async Task SetupShips(Game game)
