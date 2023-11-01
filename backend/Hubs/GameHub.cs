@@ -36,7 +36,8 @@ public class GameHub : Hub
         var player = new Player { Id = Context.ConnectionId, Name = playerName };
         Game game = new Game();
 
-        ThemeAbstraction themeAbstraction = new ThemeAbstraction();
+        ThemeImplementor themeImplementor = new ConcreteImplementorLight();
+        ThemeAbstraction themeAbstraction = new LightTheme(themeImplementor);
         player.OwnBoard.theme = themeAbstraction;
         Color background = themeAbstraction.Background();
         string text = themeAbstraction.Text();

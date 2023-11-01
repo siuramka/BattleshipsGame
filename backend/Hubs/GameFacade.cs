@@ -146,13 +146,13 @@ namespace backend.Hubs
         {
             var currentPlayer = GetCurrentPlayer();
 
-            if(currentPlayer.OwnBoard.theme.Implementor is ConcreteImplementorLight)
+            if(currentPlayer.OwnBoard.theme is LightTheme)
             {
-                currentPlayer.OwnBoard.theme.Implementor = new ConcreteImplementorDark();
+                currentPlayer.OwnBoard.theme = new DarkTheme(new ConcreteImplementorDark());
             }
             else
             {
-                currentPlayer.OwnBoard.theme.Implementor = new ConcreteImplementorLight();
+                currentPlayer.OwnBoard.theme = new LightTheme(new ConcreteImplementorLight()); ;
             }
             return currentPlayer.OwnBoard.theme;
         }
