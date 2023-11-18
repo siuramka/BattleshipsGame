@@ -3,6 +3,7 @@ using backend.Strategies;
 using Shared;
 using backend.Models.Entity.Bombs;
 using backend.Models.Entity.Bombs.BigBomb;
+using backend.Strategies.Attacks;
 
 namespace backend.Models.Entity.Ships
 {
@@ -10,6 +11,8 @@ namespace backend.Models.Entity.Ships
     {
         public BigShip()
         {
+            this.Stats.ArmourCount = 9000;
+            this.Stats.HealthCount = 9000;
         }
 
         public BigShip(BigShip ship)
@@ -35,14 +38,9 @@ namespace backend.Models.Entity.Ships
             return ship;
         }
 
-        public override IAttackStrategy GetAttackStrategy()
+        public override AttackTemplate GetAttackTemplate()
         {
-            return new BigBombAttackStrategy();
-        }
-
-        public override BombFactory GetShipBombFactory()
-        {
-            return new BigBombFactory();
+            return new BigShipAttack();
         }
 
         public override Ship ShallowCopy()

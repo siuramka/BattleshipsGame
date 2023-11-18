@@ -1,5 +1,6 @@
 ﻿using backend.Models.Entity.Bombs;
 using backend.Strategies;
+using backend.Strategies.Attacks;
 
 namespace backend.Models.Entity.Ships.Decorators
 {
@@ -22,14 +23,9 @@ namespace backend.Models.Entity.Ships.Decorators
             Size = ship.Size;
         }
 
-        public override IAttackStrategy GetAttackStrategy()
+        public override AttackTemplate GetAttackTemplate()
         {
-            return _ship.GetAttackStrategy();
-        }
-
-        public override BombFactory GetShipBombFactory()
-        {
-            return _ship.GetShipBombFactory();
+            return _ship.GetAttackTemplate();
         }
 
         public override void AddCoordinate(int x, int y)

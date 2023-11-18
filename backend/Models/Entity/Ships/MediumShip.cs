@@ -4,6 +4,7 @@ using Shared;
 using backend.Models.Entity.Bombs;
 using backend.Models.Entity.Bombs.SmallBomb;
 using backend.Models.Entity.Bombs.MediumBomb;
+using backend.Strategies.Attacks;
 
 namespace backend.Models.Entity.Ships
 {
@@ -11,6 +12,8 @@ namespace backend.Models.Entity.Ships
     {
         public MediumShip()
         {
+            this.Stats.ArmourCount = 5000;
+            this.Stats.HealthCount = 5000;
         }
 
         public MediumShip(MediumShip ship)
@@ -36,14 +39,9 @@ namespace backend.Models.Entity.Ships
             return ship;
         }
 
-        public override IAttackStrategy GetAttackStrategy()
+        public override AttackTemplate GetAttackTemplate()
         {
-            return new MediumBombAttackStrategy();
-        }
-
-        public override BombFactory GetShipBombFactory()
-        {
-            return new MediumBombFactory();
+            return new MediumShipAttack();
         }
 
         public override Ship ShallowCopy()
