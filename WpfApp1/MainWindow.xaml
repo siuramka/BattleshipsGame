@@ -154,7 +154,7 @@
             <Label Content="9" HorizontalAlignment="Center" Grid.Row="9" VerticalAlignment="Center"/>
             <Label Content="10" HorizontalAlignment="Center" Grid.Row="10" VerticalAlignment="Center"/>
         </Grid>
-        <ListBox x:Name="MessagesListbox" Grid.Column="2" Margin="14,34,11,0" RenderTransformOrigin="0.5,0.5" Height="190" VerticalAlignment="Top">
+        <ListBox x:Name="MessagesListbox" Grid.Column="2" Margin="14,34,11,0" RenderTransformOrigin="0.5,0.5" Height="92" VerticalAlignment="Top">
             <ListBox.Resources>
                 <Style TargetType="Border">
                     <Setter Property="CornerRadius" Value="10"></Setter>
@@ -274,5 +274,20 @@
                 </Style>
             </Button.Resources>
         </Button>
+        <ListBox x:Name="MessagesListbox_ShipStats" Grid.Column="2" Margin="14,138,11,0" RenderTransformOrigin="0.5,0.5" Height="92" VerticalAlignment="Top">
+            <ListBox.Resources>
+                <Style TargetType="{x:Type Border}">
+                    <Setter Property="CornerRadius" Value="10"/>
+                </Style>
+            </ListBox.Resources>
+            <ListBox.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform AngleX="-0.181"/>
+                    <RotateTransform/>
+                    <TranslateTransform X="-0.568"/>
+                </TransformGroup>
+            </ListBox.RenderTransform>
+        </ListBox>
     </Grid>
 </Window>

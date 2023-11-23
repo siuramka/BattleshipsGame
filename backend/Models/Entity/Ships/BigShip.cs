@@ -11,8 +11,7 @@ namespace backend.Models.Entity.Ships
     {
         public BigShip()
         {
-            this.Stats.ArmourCount = 9000;
-            this.Stats.HealthCount = 9000;
+            Stats = new Statistics(9000, 9000);
         }
 
         public BigShip(BigShip ship)

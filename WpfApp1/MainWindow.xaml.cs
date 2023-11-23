@@ -182,6 +182,7 @@ namespace WpfApp1
             _connection.On<MoveResult>("UndoOpponentResult", HandleOnUndoOpponentResult);
 
             _connection.On<SetupShipResponse>("SetupShipResponse", HandleOnSetShipResult); // need to add DTO or smt
+            _connection.On<List<ShipStats>>("ShipsStats", HandleOnShipStats);
 
             _connection.On<bool>("GameOver", HandleOnGameOver);
 
@@ -191,6 +192,15 @@ namespace WpfApp1
             _connection.On<List<ShipCoordinate>>("RerenderCoordinates", HandleRerenderCoordinates);
             _connection.On<List<SetupShipResponse>>("RandomShipsResponse", HandleOnRandomSetShips);
             _connection.On<Shared.Color, string, Shared.Color, Shared.Color>("SetTheme", HandleThemeMode);
+        }
+        private void HandleOnShipStats(List<ShipStats> shipStats)
+        {
+            ClearMessageToShips();
+            SendMessageToShips("Your ship stats:");
+            foreach (var shipStat in shipStats)
+            {
+                SendMessageToShips(shipStat.ToString());
+            } 
         }
 
         private void HandleRerenderCoordinates(List<ShipCoordinate> coordinates)
@@ -348,6 +358,22 @@ namespace WpfApp1
                 return null;
             }
         }
+        private void ClearMessageToShips()
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                MessagesListbox_ShipStats.Items.Clear();
+            });
+        }
+
+
+        private void SendMessageToShips(string message)
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                MessagesListbox_ShipStats.Items.Add(message);
+            });
+        }
 
         private void SendMessageToClient(string message)
         {
@@ -420,6 +446,8 @@ namespace WpfApp1
             {
                 TestModeButton.IsEnabled = true;
             });
+            _connection.SendAsync("ShipsStats");
+
         }
 
         private void HandleOnWaitingForOpponent(string username)

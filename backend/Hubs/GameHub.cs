@@ -259,6 +259,8 @@ public class GameHub : Hub
             Clients.Client(enemyPlayer.Id), enemyPlayer.OwnBoard);
 
         await shotCommand.Execute();
+        await ShipsStats();
+        await ShipsStatsEnemy();
     }
 
     public async Task UndoMove(MakeMove move)
@@ -286,7 +288,29 @@ public class GameHub : Hub
         await Clients.Client(enemyPlayer.Id).SendAsync("YourTurn", "YourTurn");
     }
 
+    public async Task ShipsStats()
+    {
+        GameFacade gameFacade = new GameFacade(Context.ConnectionId);
 
+        var currentPlayer = gameFacade.GetCurrentPlayer();
+        var playerShips = currentPlayer.OwnBoard.GetShips();
+
+        var shipStats = playerShips.Select(s => new ShipStats {ShipType = s.ShipType, Stats = new Statistics(s.Stats.HealthCount, s.Stats.ArmourCount) });
+
+        await Clients.Client(currentPlayer.Id).SendAsync("ShipsStats", shipStats);
+    }
+
+    public async Task ShipsStatsEnemy()
+    {
+        GameFacade gameFacade = new GameFacade(Context.ConnectionId);
+
+        var enemyPlayer = gameFacade.GetEnemyPlayer();
+        var playerShips = enemyPlayer.OwnBoard.GetShips();
+
+        var shipStats = playerShips.Select(s => new ShipStats { ShipType = s.ShipType, Stats = new Statistics(s.Stats.HealthCount, s.Stats.ArmourCount) });
+
+        await Clients.Client(enemyPlayer.Id).SendAsync("ShipsStats", shipStats);
+    }
 
     // public override Task OnDisconnectedAsync(Exception exception)
     // {

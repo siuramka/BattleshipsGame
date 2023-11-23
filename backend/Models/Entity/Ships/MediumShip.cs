@@ -12,8 +12,8 @@ namespace backend.Models.Entity.Ships
     {
         public MediumShip()
         {
-            this.Stats.ArmourCount = 5000;
-            this.Stats.HealthCount = 5000;
+            Stats = new Statistics(5000, 5000);
+
         }
 
         public MediumShip(MediumShip ship)

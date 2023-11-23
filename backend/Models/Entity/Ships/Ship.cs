@@ -13,7 +13,7 @@ namespace backend.Models.Entity.Ships
         public bool IsVertical { get; set; }
         public ShipType ShipType { get; set; }
         public abstract AttackTemplate GetAttackTemplate();
-        public Statistics Stats = new Statistics();
+        public Statistics? Stats { get; set;  }
 
         public Ship SetVertical()
         {

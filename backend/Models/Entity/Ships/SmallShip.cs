@@ -11,8 +11,7 @@ public class SmallShip : Ship
 {
     public SmallShip()
     {
-        this.Stats.ArmourCount = 1000;
-        this.Stats.HealthCount = 1000;
+        Stats = new Statistics(1000, 1000);
     }
 
     public SmallShip(SmallShip ship) {
