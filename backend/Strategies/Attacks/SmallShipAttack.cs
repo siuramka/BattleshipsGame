@@ -12,7 +12,7 @@ namespace backend.Strategies.Attacks
 
         public override void AttackTarget()
         {
-            if (attackShip.Stats.HealthCount > 1000)
+            if (attackShip.Stats.HealthCount > 100)
             {
                 RemoveHealth();
             }
