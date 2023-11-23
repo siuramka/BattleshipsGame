@@ -1,4 +1,5 @@
 ﻿using backend.Models.Entity;
+using backend.Models.Entity.Flyweight;
 using backend.Models.Entity.GameBoardExtensions;
 using backend.Models.Entity.Ships;
 using backend.Models.Entity.Ships.Factory;
@@ -15,7 +16,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 using System.Windows.Threading;
 using Interaction = Microsoft.Xaml.Behaviors.Interaction;
 
@@ -57,6 +60,8 @@ namespace WpfApp1
         private string gameState = ""; // change to class ?
         private DispatcherTimer timer;
         private HubConnection _connection;
+        private readonly List<Snowflake> snowflakes = new List<Snowflake>();
+        private readonly Random random = new Random();
 
         public MainWindow()
         {
@@ -69,6 +74,92 @@ namespace WpfApp1
             Loaded += async (sender, e) => await ConnectToServer();
             InitializeBombAttackBox();
             SetupListeners();
+
+            StartSnowfall();
+        }
+
+        //private void StartSnowfall()
+        //{
+        //    var timer = new System.Windows.Threading.DispatcherTimer();
+        //    timer.Tick += (sender, args) => GenerateSnowflake();
+        //    timer.Interval = TimeSpan.FromMilliseconds(10);
+        //    timer.Start();
+        //}
+
+        //private void GenerateSnowflake()
+        //{
+        //    var size = random.Next(5, 15);
+        //    var snowflake = new Snowflake
+        //    {
+        //        X = random.Next((int)ActualWidth),
+        //        Y = -size, // Start above the window
+        //        FallSpeed = random.Next(1, 5),
+        //        Size = size
+        //    };
+
+        //    snowflakes.Add(snowflake);
+
+        //    var snowflakeShape = new Ellipse
+        //    {
+        //        Width = size,
+        //        Height = size,
+        //        Fill = Brushes.White
+        //    };
+
+        //    Canvas.SetLeft(snowflakeShape, snowflake.X);
+        //    Canvas.SetTop(snowflakeShape, snowflake.Y);
+
+        //    MainCanvas.Children.Add(snowflakeShape);
+
+        //    var animation = new DoubleAnimation
+        //    {
+        //        To = ActualHeight,
+        //        Duration = TimeSpan.FromSeconds(snowflake.FallSpeed)
+        //    };
+
+        //    snowflakeShape.BeginAnimation(Canvas.TopProperty, animation);
+        //}
+
+        private void StartSnowfall()
+        {
+            var timer = new System.Windows.Threading.DispatcherTimer();
+            timer.Tick += (sender, args) => GenerateSnowflake();
+            timer.Interval = TimeSpan.FromMilliseconds(100);
+            timer.Start();
+        }
+
+        private void GenerateSnowflake()
+        {
+            var type = new SnowflakeType();
+            type.Size = random.Next(5, 15);
+            type.Speed = random.Next(1, 5);
+
+            var snowflake = SnowflakeFactory.GetSnowflake(type);
+
+            snowflake.X = random.Next((int)ActualWidth);
+            snowflake.Y = -snowflake.Type.Size; // Start above the window
+
+            snowflakes.Add(snowflake);
+
+            var snowflakeShape = new Ellipse
+            {
+                Width = snowflake.Type.Size,
+                Height = snowflake.Type.Size,
+                Fill = Brushes.White
+            };
+
+            Canvas.SetLeft(snowflakeShape, snowflake.X);
+            Canvas.SetTop(snowflakeShape, snowflake.Y);
+
+            MainCanvas.Children.Add(snowflakeShape);
+
+            var animation = new DoubleAnimation
+            {
+                To = ActualHeight,
+                Duration = TimeSpan.FromSeconds(snowflake.Type.Speed)
+            };
+
+            snowflakeShape.BeginAnimation(Canvas.TopProperty, animation);
         }
 
         private Button CreateButton(bool myBoard, int x, int y)
