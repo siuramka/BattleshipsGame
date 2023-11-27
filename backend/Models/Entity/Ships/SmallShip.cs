@@ -18,7 +18,7 @@ public class SmallShip : Ship
         Size = ship.Size;
         IsVertical = ship.IsVertical;
         ShipType = ship.ShipType;
-        foreach(ShipCoordinate coordinate in ship.Coordinates)
+        foreach(ShipCoordinate coordinate in ship.GetCoordinates())
         {
             AddCoordinate(coordinate);
         }

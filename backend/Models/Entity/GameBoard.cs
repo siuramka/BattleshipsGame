@@ -1,15 +1,17 @@
 ﻿using backend.Models.Entity.Bombs;
 using backend.Models.Entity.GameBoardExtensions;
+using backend.Models.Entity.Iterator;
 using backend.Models.Entity.Ships;
 using backend.Strategies;
 using Shared;
+
 
 namespace backend.Models.Entity;
 
 //Would be better to write a separate class for the grid
 public class GameBoard
 {
-    private List<Ship> _battleships = new();
+    private ShipCollection _battleships = new ShipCollection();
     private HashSet<ShipCoordinate> _missedCoordinates = new();
     private Ship? _enemyAttackShip;
     public ThemeAbstraction theme { get; set; }
@@ -34,21 +36,21 @@ public class GameBoard
     }
     public void AddShip(Ship ship)
     {
-        _battleships.Add(ship);
+        _battleships.AddItem(ship);
     }
     public void ReplaceShipAt(int index, Ship ship)
     {
-        if (index >= _battleships.Count)
+        if (index >= _battleships.getItems().Count)
         {
             return;
         }
-        _battleships[index] = ship;
+        _battleships.getItems()[index] = ship;
     }
     public bool HaveAllShipsSunk
     {
         get
         {
-            return _battleships.All(x => x.IsSunk());
+            return _battleships.getItems().All(x => x.IsSunk());
         }
     }
     public List<ShipCoordinate> GetMissedCoordinates()
@@ -62,7 +64,7 @@ public class GameBoard
 
     public List<Ship> GetShips()
     {
-        return new List<Ship>(_battleships);
+        return new List<Ship>(_battleships.getItems());
     }
 
     //gameover check if all sunk

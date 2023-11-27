@@ -3,12 +3,13 @@ using backend.Strategies;
 using Shared;
 using backend.Models.Entity.Bombs;
 using backend.Strategies.Attacks;
+using backend.Models.Entity.Iterator;
 
 namespace backend.Models.Entity.Ships
 {
     public abstract class Ship
     {
-        public List<ShipCoordinate> Coordinates { get; private set; } = new List<ShipCoordinate>();
+        private ShipCoordinatesCollection Coordinates = new ShipCoordinatesCollection();
         public int Size { get; set; }
         public bool IsVertical { get; set; }
         public ShipType ShipType { get; set; }
@@ -23,17 +24,17 @@ namespace backend.Models.Entity.Ships
 
         public virtual void AddCoordinate(int x, int y)
         {
-            Coordinates.Add(new ShipCoordinate(x, y));
+            Coordinates.AddItem(new ShipCoordinate(x, y));
         }
 
         public virtual void AddCoordinate(ShipCoordinate coordinate)
         {
-            Coordinates.Add(coordinate);
+            Coordinates.AddItem(coordinate);
         }
 
         public virtual List<ShipCoordinate> GetCoordinates()
         {
-            return new List<ShipCoordinate>(Coordinates);
+            return new List<ShipCoordinate>(Coordinates.getItems());
         }
 
         public void RemoveAllCoordinates()
@@ -43,12 +44,12 @@ namespace backend.Models.Entity.Ships
 
         public bool CanHitCoordinate(int x, int y)
         {
-            return Coordinates.Exists(coord => coord.X == x && coord.Y == y && !coord.IsHit);
+            return Coordinates.getItems().Exists(coord => coord.X == x && coord.Y == y && !coord.IsHit);
         }
 
         public void HitCoordinate(int x, int y)
         {
-            var coordinate = Coordinates.Find(coord => coord.X == x && coord.Y == y);
+            var coordinate = Coordinates.getItems().Find(coord => coord.X == x && coord.Y == y);
             coordinate?.Hit();
             if (coordinate != null)
             {
@@ -58,7 +59,7 @@ namespace backend.Models.Entity.Ships
 
         public bool IsSunk()
         {
-            return Coordinates.All(coord => coord.IsHit);
+            return Coordinates.getItems().All(coord => coord.IsHit);
         }
 
         public override string ToString()
