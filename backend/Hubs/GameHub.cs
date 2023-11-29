@@ -84,6 +84,23 @@ public class GameHub : Hub
         await Clients.Client(gameFacade.GetCurrentPlayer().Id).SendAsync("SetTheme", background, text, textColor, buttonBackgroundColor);
     }
 
+    public async Task ClientGlobalMessage(string message)
+    {
+        GameFacade gameFacade = new GameFacade(Context.ConnectionId);
+        var currentPlayer = gameFacade.GetCurrentPlayer();
+        var enemyPlayer = gameFacade.GetEnemyPlayer();
+
+        if (currentPlayer != null)
+        {
+            await Clients.Client(currentPlayer.Id).SendAsync("GlobalMessage", string.Format("{0}: {1}", currentPlayer.Name, message));
+        }
+
+        if (enemyPlayer != null)
+        {
+            await Clients.Client(enemyPlayer.Id).SendAsync("GlobalMessage", string.Format("{0}: {1}", currentPlayer.Name, message));
+        }
+    }
+
     private async Task SetupShips(Game game)
     {
 

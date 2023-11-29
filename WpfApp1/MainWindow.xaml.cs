@@ -15,6 +15,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Linq;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
@@ -283,7 +285,9 @@ namespace WpfApp1
             _connection.On<List<ShipCoordinate>>("RerenderCoordinates", HandleRerenderCoordinates);
             _connection.On<List<SetupShipResponse>>("RandomShipsResponse", HandleOnRandomSetShips);
             _connection.On<Shared.Color, string, Shared.Color, Shared.Color>("SetTheme", HandleThemeMode);
+            _connection.On<string>("GlobalMessage", SendMessageToClient);
         }
+
         private void HandleOnShipStats(List<ShipStats> shipStats)
         {
             ClearMessageToShips();
@@ -849,6 +853,55 @@ namespace WpfApp1
                 MessagesListbox.Background = buttonBackground;
                 MessagesListbox.Foreground = textColorF;
             });
+        }
+
+        private void CommandInput_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                if (!CommandInput.Text.StartsWith("/"))
+                {
+                    CommandInput.Text = string.Empty;
+                    return;
+                }
+
+                string[] splited = CommandInput.Text.Split(" ");
+                string command = splited[0];
+                string parsedCommand = command.Substring(1, command.Length - 1);
+
+                List<Executable> executableList = new List<Executable>();
+                Executable successMessage = new SendLocalMessageExecutable(MessagesListbox, string.Format("Command \"{0}\" successfuly executed", parsedCommand));
+
+                switch (parsedCommand)
+                {
+                    case TextCommand.Msg:
+                        executableList.Add(successMessage);
+                        executableList.Add(new SendGlobalMessageExecutable(_connection, string.Join(" ", splited.Skip(1))));
+                        Executables executables = new Executables(executableList);
+                        executables.execute();
+                        break;
+                    case TextCommand.Clear:
+                        Executable clear = new ClearTextBoxExecutable(MessagesListbox);
+                        clear.execute();
+                        break;
+                    case TextCommand.FreshMsg:
+                        Executables successMessageWithClear = new Executables(new List<Executable>
+                        {
+                            new ClearTextBoxExecutable(MessagesListbox),
+                            successMessage
+                        });
+                        executableList.Add(successMessageWithClear);
+                        executableList.Add(new SendGlobalMessageExecutable(_connection, string.Join(" ", splited.Skip(1))));
+                        executables = new Executables(executableList);
+                        executables.execute();
+                        break;
+                    default:
+                        MessagesListbox.Items.Add(string.Format("Unknown command \"{0}\"", parsedCommand));
+                        break;
+                }
+
+                CommandInput.Text = string.Empty;
+            }
         }
     }
 }

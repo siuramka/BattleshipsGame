@@ -154,7 +154,7 @@
             <Label Content="9" HorizontalAlignment="Center" Grid.Row="9" VerticalAlignment="Center"/>
             <Label Content="10" HorizontalAlignment="Center" Grid.Row="10" VerticalAlignment="Center"/>
         </Grid>
-        <ListBox x:Name="MessagesListbox" Grid.Column="2" Margin="14,34,11,0" RenderTransformOrigin="0.5,0.5" Height="92" VerticalAlignment="Top">
+        <ListBox x:Name="MessagesListbox" Grid.Column="2" Margin="14,34,11,0" RenderTransformOrigin="0.5,0.5" Height="80" VerticalAlignment="Top">
             <ListBox.Resources>
                 <Style TargetType="Border">
                     <Setter Property="CornerRadius" Value="10"></Setter>
@@ -233,7 +233,7 @@
             <Label Content="9" HorizontalAlignment="Center" Grid.Row="9" VerticalAlignment="Center"/>
             <Label Content="10" HorizontalAlignment="Center" Grid.Row="10" VerticalAlignment="Center"/>
         </Grid>
-        <Button x:Name="ActionButton" Content="Ready" Grid.Column="2" Margin="133,273,0,0" Click="HandleAction" IsEnabled="False" HorizontalAlignment="Left" Width="109" Height="25" VerticalAlignment="Top" Background="LightGreen">
+        <Button x:Name="ActionButton" Content="Ready" Grid.Column="2" Margin="129,262,0,0" Click="HandleAction" IsEnabled="False" HorizontalAlignment="Left" Width="109" Height="25" VerticalAlignment="Top" Background="LightGreen">
 
             <Button.Resources>
                 <Style TargetType="Border">
@@ -241,40 +241,42 @@
                 </Style>
             </Button.Resources>
         </Button>
+        <TextBox x:Name="CommandInput" Grid.Column="2" HorizontalAlignment="Center" Height="19" Margin="0,207,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="225" KeyUp="CommandInput_KeyUp"/>
         <Label x:Name="Histogram" Content="# - ship       X - ship hit       O - ship missed" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Bottom" Height="25" Width="236"/>
         <TextBlock x:Name="UserName" Grid.Column="2" HorizontalAlignment="Left" Margin="14,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="25" Width="227"><Run Language="lt-lt" Text="Username"/></TextBlock>
-        <ComboBox x:Name="ShipAttacksBox" Margin="14,243,0,0" Grid.Column="2" IsEnabled="False" HorizontalAlignment="Left" Width="109" Height="25" VerticalAlignment="Top"/>
-        <ComboBox x:Name="BombAttackBox" Margin="0,243,9,0" Grid.Column="2" IsEnabled="False" HorizontalAlignment="Right" Width="109" Height="25" VerticalAlignment="Top"/>
-        <Button x:Name="TestModeButton" Grid.Column="2" Content="Test Mode" Margin="14,303,128,0" IsEnabled="False" Click="TestMode" x:FieldModifier="public" RenderTransformOrigin="0.498,0.137" Height="25" VerticalAlignment="Top">
+        <ComboBox x:Name="ShipAttacksBox" Margin="14,231,0,0" Grid.Column="2" IsEnabled="False" HorizontalAlignment="Left" Width="109" Height="25" VerticalAlignment="Top"/>
+        <ComboBox x:Name="BombAttackBox" Margin="0,231,13,0" Grid.Column="2" IsEnabled="False" HorizontalAlignment="Right" Width="109" Height="25" VerticalAlignment="Top"/>
+        <Button x:Name="TestModeButton" Grid.Column="2" Content="Test Mode" Margin="14,292,128,0" IsEnabled="False" Click="TestMode" x:FieldModifier="public" RenderTransformOrigin="0.498,0.137" Height="25" VerticalAlignment="Top">
             <Button.Resources>
                 <Style TargetType="Border">
                     <Setter Property="CornerRadius" Value="10"></Setter>
                 </Style>
             </Button.Resources>
         </Button>
-        <Button x:Name="Undo" Grid.Column="2" Content="Undo" Margin="14,273,128,0" IsEnabled="False" Click="UndoAction" Height="25" VerticalAlignment="Top" Background="IndianRed">
+        <Button x:Name="Undo" Grid.Column="2" Content="Undo" Margin="14,262,128,0" IsEnabled="False" Click="UndoAction" Height="25" VerticalAlignment="Top" Background="IndianRed">
             <Button.Resources>
                 <Style TargetType="Border">
                     <Setter Property="CornerRadius" Value="10"></Setter>
                 </Style>
             </Button.Resources>
         </Button>
-        <Button x:Name="RandomShips" Grid.Column="2" Content="Place random ships" Margin="0,303,9,0" IsEnabled="False" Click="PlaceRandomShipAction" HorizontalAlignment="Right" Width="109" Height="25" VerticalAlignment="Top">
+        <Button x:Name="RandomShips" Grid.Column="2" Content="Place random ships" Margin="0,292,13,0" IsEnabled="False" Click="PlaceRandomShipAction" HorizontalAlignment="Right" Width="109" Height="25" VerticalAlignment="Top">
             <Button.Resources>
                 <Style TargetType="Border">
                     <Setter Property="CornerRadius" Value="10"></Setter>
                 </Style>
             </Button.Resources>
         </Button>
-        <Button x:Name="Theme" Grid.Column="2" Content="" Margin="14,333,128,0" IsEnabled="True" Click="ThemeMode" x:FieldModifier="public" RenderTransformOrigin="0.498,0.137" Height="25" VerticalAlignment="Top">
+        <Button x:Name="Theme" Grid.Column="2" Margin="14,322,128,0" IsEnabled="True" Click="ThemeMode" x:FieldModifier="public" RenderTransformOrigin="0.498,0.137" Height="25" VerticalAlignment="Top">
             <Button.Resources>
                 <Style TargetType="Border" >
                     <Setter Property="CornerRadius" Value="10"></Setter>
                     <Setter Property="BorderThickness" Value="2"></Setter>
                 </Style>
             </Button.Resources>
+            <ListBox Height="3" Width="0" d:ItemsSource="{d:SampleData ItemCount=5}"/>
         </Button>
-        <ListBox x:Name="MessagesListbox_ShipStats" Grid.Column="2" Margin="14,138,11,0" RenderTransformOrigin="0.5,0.5" Height="92" VerticalAlignment="Top">
+        <ListBox x:Name="MessagesListbox_ShipStats" Grid.Column="2" Margin="14,120,12,0" RenderTransformOrigin="0.5,0.5" Height="80" VerticalAlignment="Top">
             <ListBox.Resources>
                 <Style TargetType="{x:Type Border}">
                     <Setter Property="CornerRadius" Value="10"/>
