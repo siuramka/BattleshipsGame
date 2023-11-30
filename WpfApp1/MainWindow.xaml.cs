@@ -1,6 +1,5 @@
 ﻿using backend.Models.Entity;
 using backend.Models.Entity.Flyweight;
-using backend.Models.Entity.GameBoardExtensions;
 using backend.Models.Entity.Ships;
 using backend.Models.Entity.Ships.Factory;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -9,12 +8,9 @@ using Shared;
 using Shared.Transfer;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Linq;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -23,6 +19,9 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using Interaction = Microsoft.Xaml.Behaviors.Interaction;
+using WpfApp1.States;
+using System.Diagnostics;
+using System.Data;
 
 //// if you want to update UI state, you need to call your change in this
 /// as UI changes only allowed on the main thread, and this calls from the main thread. lol
@@ -64,6 +63,7 @@ namespace WpfApp1
         private HubConnection _connection;
         private readonly List<Snowflake> snowflakes = new List<Snowflake>();
         private readonly Random random = new Random();
+        private GameState currentGameState = new MatchmakingState();
 
         public MainWindow()
         {
@@ -76,8 +76,16 @@ namespace WpfApp1
             Loaded += async (sender, e) => await ConnectToServer();
             InitializeBombAttackBox();
             SetupListeners();
-
+        
             StartSnowfall();
+        }
+
+        public void UpdateState(GameState state)
+        {
+            currentGameState = state;
+            this.Dispatcher.Invoke(() => {
+                StateInfo.Content = state.getStateInfo().ToString();
+            });
         }
 
         //private void StartSnowfall()
@@ -124,7 +132,7 @@ namespace WpfApp1
 
         private void StartSnowfall()
         {
-            var timer = new System.Windows.Threading.DispatcherTimer();
+            var timer = new DispatcherTimer();
             timer.Tick += (sender, args) => GenerateSnowflake();
             timer.Interval = TimeSpan.FromMilliseconds(100);
             timer.Start();
@@ -382,6 +390,7 @@ namespace WpfApp1
                 button.Style = (Style)Resources[moveResult.IsHit ? "HitButton" : "NotHitButton"];
             });   
         }
+
         private void HandleOnUndoOpponentResult(MoveResult moveResult)
         {
             string message = "Enemy undone his move!";
@@ -453,6 +462,7 @@ namespace WpfApp1
                 return null;
             }
         }
+
         private void ClearMessageToShips()
         {
             this.Dispatcher.Invoke(() =>
@@ -477,8 +487,10 @@ namespace WpfApp1
                 MessagesListbox.Items.Add(message);
             });
         }
+
         private void HandleOnPlayerTurn(string _)
         {
+            UpdateState(new LocalplayerTurnState(new EnemyTurnState()));
             SendMessageToClient("Your Turn!");
             EnableEnemyBoard(true);
         }
@@ -513,11 +525,10 @@ namespace WpfApp1
 
             if (buttonClicked)
             {
-
                 await _connection.SendAsync("UndoMove", moveResult);
-            }
-            if (!buttonClicked)
-            {
+                UpdateState(new LocalplayerTurnState(new EnemyTurnState()));
+            } 
+            else {
                 EnableUndo(false); // Attach an event handler
                 await _connection.SendAsync("GiveMoveToPlayer");
             }
@@ -535,18 +546,19 @@ namespace WpfApp1
 
         private void HandleOnGameStarted(string _)
         {
-            gameState = "gameStarted";
+            UpdateState(new TransitionState());
             SendMessageToClient("Game started");
             this.Dispatcher.Invoke(() =>
             {
                 TestModeButton.IsEnabled = true;
             });
-            _connection.SendAsync("ShipsStats");
 
+            _connection.SendAsync("ShipsStats");
         }
 
         private void HandleOnWaitingForOpponent(string username)
         {
+            UpdateState(new MatchmakingState());
             this.Dispatcher.Invoke(() =>
             {
                 UserName.Text = "Welcome, " + username;
@@ -555,7 +567,7 @@ namespace WpfApp1
 
         private void HandleOnSetupShips(string _)
         {
-            gameState = "setupingships";
+            UpdateState(new PlacingShipsState());
             this.Dispatcher.Invoke(() =>
             {
                 MessagesListbox.Items.Add("Please setup your ships!");
@@ -706,7 +718,7 @@ namespace WpfApp1
 
         private void HandleAction(object sender, RoutedEventArgs e)
         {
-            if (this.gameState == "setupingships")
+            if (currentGameState.getName() == State.PlacingShips)
             {
                 _connection.SendAsync("DoneShipSetup");
                 ClearEmptyButtons();
@@ -744,6 +756,7 @@ namespace WpfApp1
 
             _connection.SendAsync("MakeMove",new MakeMove(x, y, selectedAttackShip.ShipType, selectedAttackShip.IsVertical, selectedBomb));
             EnableEnemyBoard(false);
+            UpdateState(currentGameState.getNextState());
         }
 
         private void HandleMouseEnter(object sender, RoutedEventArgs e)

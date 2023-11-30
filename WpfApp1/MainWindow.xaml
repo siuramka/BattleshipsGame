@@ -243,6 +243,7 @@
         </Button>
         <TextBox x:Name="CommandInput" Grid.Column="2" HorizontalAlignment="Center" Height="19" Margin="0,207,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="225" KeyUp="CommandInput_KeyUp"/>
         <Label x:Name="Histogram" Content="# - ship       X - ship hit       O - ship missed" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Bottom" Height="25" Width="236"/>
+        <Label x:Name="StateInfo" Grid.Column="1" HorizontalAlignment="Left" Margin="90,0,0,0" VerticalAlignment="Bottom" Height="25" Width="223"/>
         <TextBlock x:Name="UserName" Grid.Column="2" HorizontalAlignment="Left" Margin="14,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="25" Width="227"><Run Language="lt-lt" Text="Username"/></TextBlock>
         <ComboBox x:Name="ShipAttacksBox" Margin="14,231,0,0" Grid.Column="2" IsEnabled="False" HorizontalAlignment="Left" Width="109" Height="25" VerticalAlignment="Top"/>
         <ComboBox x:Name="BombAttackBox" Margin="0,231,13,0" Grid.Column="2" IsEnabled="False" HorizontalAlignment="Right" Width="109" Height="25" VerticalAlignment="Top"/>
