@@ -292,5 +292,12 @@
             </ListBox.RenderTransform>
         </ListBox>
         <Canvas x:Name="MainCanvas" Background="Transparent" HorizontalAlignment="Left" Height="53" Margin="20,-10,0,0" VerticalAlignment="Top" Width="978" Grid.ColumnSpan="3"/>
+        <Button x:Name="ResetGame" Grid.Column="2" Content="Reset game" Margin="0,322,13,0" IsEnabled="True" Click="ResetGameAction" HorizontalAlignment="Right" Width="109" Height="25" VerticalAlignment="Top">
+            <Button.Resources>
+                <Style TargetType="{x:Type Border}">
+                    <Setter Property="CornerRadius" Value="10"/>
+                </Style>
+            </Button.Resources>
+        </Button>
     </Grid>
 </Window>
