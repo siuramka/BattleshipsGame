@@ -10,6 +10,7 @@ using Shared.Transfer;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -47,8 +48,8 @@ namespace WpfApp1
         private const int MAP_SIZE_X = 10;
         private const int MAP_SIZE_Y = 10;
         private static ShipFactory shipFactory = new ConcreteShipFactory();
-        private Ship[] Ships = { 
-            shipFactory.GetShip(ShipType.SmallShip), 
+        private Ship[] Ships = {
+            shipFactory.GetShip(ShipType.SmallShip),
             shipFactory.GetShip(ShipType.MediumShip),
             shipFactory.GetShip(ShipType.BigShip),
             shipFactory.GetShip(ShipType.MediumShip).SetVertical(),
@@ -166,7 +167,7 @@ namespace WpfApp1
         {
             Button b = new Button();
 
-            EnemeyBoardStyles.TryAdd(x * 10 + y, new Style()) ;
+            EnemeyBoardStyles.TryAdd(x * 10 + y, new Style());
 
             this.Dispatcher.Invoke(() =>
             {
@@ -184,7 +185,7 @@ namespace WpfApp1
                     this.Dispatcher.Invoke(() =>
                     {
                         item.Click += HandleShipArrangement;
-                        if ((ship.IsVertical && y + ship.Size <= MAP_SIZE_Y) || 
+                        if ((ship.IsVertical && y + ship.Size <= MAP_SIZE_Y) ||
                             (!ship.IsVertical && x + ship.Size <= MAP_SIZE_X))
                         {
                             b.ContextMenu.Items.Add(item);
@@ -283,7 +284,35 @@ namespace WpfApp1
             _connection.On<List<ShipCoordinate>>("RerenderCoordinates", HandleRerenderCoordinates);
             _connection.On<List<SetupShipResponse>>("RandomShipsResponse", HandleOnRandomSetShips);
             _connection.On<Shared.Color, string, Shared.Color, Shared.Color>("SetTheme", HandleThemeMode);
+            _connection.On<string>("SetIcon", HandlePlayerIcon);
         }
+
+        private void HandlePlayerIcon(string icon)
+        {
+            try
+            {
+                byte[] imageBytes = Convert.FromBase64String(icon);
+
+                using (MemoryStream ms = new MemoryStream(imageBytes))
+                {
+                    BitmapImage bitmapImage = new BitmapImage();
+                    bitmapImage.BeginInit();
+                    bitmapImage.StreamSource = ms;
+                    bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmapImage.EndInit();
+                    bitmapImage.Freeze(); // Freeze the image to avoid memory leaks
+
+                    this.Dispatcher.Invoke(() => {
+                        PlayerIcon.Source = bitmapImage;
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading image: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private void HandleOnShipStats(List<ShipStats> shipStats)
         {
             ClearMessageToShips();

@@ -2,6 +2,7 @@
 using backend.Manager;
 using backend.Models.Entity;
 using backend.Models.Entity.GameBoardExtensions;
+using backend.Models.Entity.Proxy;
 using backend.Models.Entity.Ships;
 using backend.Models.Entity.Ships.Decorators;
 using backend.Models.Entity.Ships.Factory;
@@ -34,6 +35,10 @@ public class GameHub : Hub
         GameFacade gameFacade = new GameFacade(Context.ConnectionId);
         var playerName = gameFacade.EmptyGameExist() ? "Player2" : "Player1"; // Player1 if hes the first to join the game
         var player = new Player { Id = Context.ConnectionId, Name = playerName };
+        ProxyPlayerImage proxyPlayerImage = new ProxyPlayerImage(player);
+        DisplayPlayerImage(proxyPlayerImage);
+        await Clients.Client(player.Id).SendAsync("SetIcon", player.Icon);
+
         Game game = new Game();
 
         ThemeImplementor themeImplementor = new ConcreteImplementorLight();
@@ -65,6 +70,12 @@ public class GameHub : Hub
         await Clients.Client(player.Id).SendAsync("WaitingForOpponent", player.Name);
         await SetupShips(game);
 
+    }
+
+    public void DisplayPlayerImage(IGameAsset playerImage)
+    {
+        // Display player image using the common interface
+        playerImage.GetImage();
     }
 
     public async Task GenerateRandomShips()
