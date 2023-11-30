@@ -3,7 +3,7 @@ using System.Collections;
 
 namespace backend.Models.Entity.Iterator
 {
-    class ShipCollection : IteratorAggregate
+    public class ShipCollection : IteratorAggregate
     {
         List<Ship> _collection = new List<Ship>();
 

@@ -3,7 +3,7 @@ using System.Collections;
 
 namespace backend.Models.Entity.Iterator
 {
-    class ShipCoordinatesCollection : IteratorAggregate
+    public class ShipCoordinatesCollection : IteratorAggregate
     {
         List<ShipCoordinate> _collection = new List<ShipCoordinate>();
 

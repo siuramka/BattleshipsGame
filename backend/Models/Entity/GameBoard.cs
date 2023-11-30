@@ -14,10 +14,28 @@ public class GameBoard
     private ShipCollection _battleships = new ShipCollection();
     private HashSet<ShipCoordinate> _missedCoordinates = new();
     private Ship? _enemyAttackShip;
-    public ThemeAbstraction theme { get; set; }
+    private ThemeAbstraction _theme;
+
+    public void SetTheme(ThemeAbstraction theme)
+    {
+        _theme = theme;
+    }
+    public ThemeAbstraction GetTheme() => _theme;
 
     public int maxSizeX { get { return 10; } }
     public int maxSizeY { get { return 10; } }
+
+    public GameBoardMomento CreateMomento()
+    {
+        return new GameBoardMomento(_battleships, _missedCoordinates, _enemyAttackShip, _theme);
+    }
+    public void RestoreFromMomento(GameBoardMomento momento)
+    {
+        _battleships = momento.Battleships;
+        _missedCoordinates = momento.MissedCoordinates;
+        _enemyAttackShip = momento.EnemyAttackShip;
+        _theme = momento.Theme;
+    }
     public void SetEnemyAttackShip(Ship ship)
     {
         _enemyAttackShip = ship;
@@ -67,5 +85,4 @@ public class GameBoard
         return new List<Ship>(_battleships.getItems());
     }
 
-    //gameover check if all sunk
 }

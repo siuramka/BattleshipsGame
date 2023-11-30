@@ -16,6 +16,9 @@ namespace backend.Models.Entity.Ships
         public abstract AttackTemplate GetAttackTemplate();
         public Statistics? Stats { get; set;  }
 
+        public int PlacedX { get; set; }
+        public int PlacedY { get; set; }
+
         public Ship SetVertical()
         {
             IsVertical = true;
