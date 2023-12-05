@@ -25,6 +25,7 @@ using Interaction = Microsoft.Xaml.Behaviors.Interaction;
 using WpfApp1.States;
 using System.Diagnostics;
 using System.Data;
+using WpfApp1.Interpreter;
 
 //// if you want to update UI state, you need to call your change in this
 /// as UI changes only allowed on the main thread, and this calls from the main thread. lol
@@ -989,18 +990,19 @@ namespace WpfApp1
                     return;
                 }
 
-                string[] splited = CommandInput.Text.Split(" ");
-                string command = splited[0];
-                string parsedCommand = command.Substring(1, command.Length - 1);
+                Command command = new Command(CommandInput.Text);
+                MessageCommandInterpreter interpreter = new MessageCommandInterpreter();
+
+                interpreter.Interpret(command);
 
                 List<Executable> executableList = new List<Executable>();
-                Executable successMessage = new SendLocalMessageExecutable(MessagesListbox, string.Format("Command \"{0}\" successfuly executed", parsedCommand));
+                Executable successMessage = new SendLocalMessageExecutable(MessagesListbox, string.Format("Command \"{0}\" successfuly executed", command.ParsedCommand));
 
-                switch (parsedCommand)
+                switch (command.ParsedCommand.Name)
                 {
                     case TextCommand.Msg:
                         executableList.Add(successMessage);
-                        executableList.Add(new SendGlobalMessageExecutable(_connection, string.Join(" ", splited.Skip(1))));
+                        executableList.Add(new SendGlobalMessageExecutable(_connection, string.Join(" ", command.ParsedCommand.Arguments)));
                         Executables executables = new Executables(executableList);
                         executables.execute();
                         break;
@@ -1015,12 +1017,12 @@ namespace WpfApp1
                             successMessage
                         });
                         executableList.Add(successMessageWithClear);
-                        executableList.Add(new SendGlobalMessageExecutable(_connection, string.Join(" ", splited.Skip(1))));
+                        executableList.Add(new SendGlobalMessageExecutable(_connection, string.Join(" ", command.ParsedCommand.Arguments)));
                         executables = new Executables(executableList);
                         executables.execute();
                         break;
                     default:
-                        MessagesListbox.Items.Add(string.Format("Unknown command \"{0}\"", parsedCommand));
+                        MessagesListbox.Items.Add(string.Format("Unknown command \"{0}\"", command.ParsedCommand));
                         break;
                 }
 
