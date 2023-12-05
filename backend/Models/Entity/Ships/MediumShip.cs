@@ -12,7 +12,7 @@ namespace backend.Models.Entity.Ships
     {
         public MediumShip()
         {
-            Stats = new Statistics(5000, 5000);
+            Stats = new Statistics(5000);
 
         }
 

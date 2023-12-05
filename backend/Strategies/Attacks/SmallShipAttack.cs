@@ -1,7 +1,9 @@
 ﻿using backend.Models.Entity;
 using backend.Models.Entity.Bombs;
+using backend.Models.Entity.Bombs.BigBomb;
 using backend.Models.Entity.Bombs.SmallBomb;
 using backend.Models.Entity.Ships;
+using backend.Strategies.Attacks.Damage;
 using backend.Strategies.Ships;
 using Shared;
 
@@ -18,43 +20,24 @@ namespace backend.Strategies.Attacks
             }
             else
             {
-                RemoveHealth();
+                //RemoveHealth();
             }
 
-        }
-
-        public override void RemoveArmour()
-        {
-            if (bombType == BombType.MissileBomb && targetShip.Stats.ArmourCount >= ArmourDamage)
-            {
-                targetShip.Stats.ArmourCount -= ArmourDamage;
-            }
-
-            if (bombType == BombType.AtomicBomb && targetShip.Stats.ArmourCount >= ArmourDamage)
-            {
-                targetShip.Stats.ArmourCount -= ArmourDamage * 1.25;
-            }
-        }
-
-        public override void RemoveHealth()
-        {
-            if (bombType == BombType.MissileBomb && targetShip.Stats.HealthCount >= HealthDamage)
-            {
-                targetShip.Stats.HealthCount -= HealthDamage;
-            }
-
-            if (bombType == BombType.AtomicBomb && targetShip.Stats.HealthCount >= HealthDamage)
-            {
-                targetShip.Stats.HealthCount -= HealthDamage * 1.25;
-            }
         }
 
         public override void SetupWeapons()
         {
-            bombFactory = new SmallBombFactory();
-            attackStrategy = new SmallBombAttackStrategy();
-            HealthDamage = 100;
-            ArmourDamage = 100;
+            bombFactory = new BigBombFactory();
+            attackStrategy = new BigBombAttackStrategy();
+
+            var h1 = new BombDamageHandler();
+            var h3 = new ShipDamageAttackHandler();
+
+            h1.SetNext(h3);
+
+            HealthDamage = h1.GetDamage(gameBoard,HealthDamage);
         }
+
+
     }
 }

@@ -8,7 +8,7 @@
 
         public override string? ToString()
         {
-            return "Ship: " + ShipType.ToString() + "Health: " + Stats.HealthCount + "Armour: " + Stats.ArmourCount;
+            return "Ship: " + ShipType.ToString() + "Health: " + Stats.HealthCount;
         }
     }
 }

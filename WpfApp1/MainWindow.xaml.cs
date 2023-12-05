@@ -865,6 +865,7 @@ namespace WpfApp1
             BombType selectedBomb = (BombType)BombAttackBox.SelectedItem;
 
             _connection.SendAsync("MakeMove", new MakeMove(x, y, selectedAttackShip.ShipType, selectedAttackShip.IsVertical, selectedBomb));
+            _connection.SendAsync("ShipsStats");
             EnableEnemyBoard(false);
             UpdateState(currentGameState.getNextState());
         }

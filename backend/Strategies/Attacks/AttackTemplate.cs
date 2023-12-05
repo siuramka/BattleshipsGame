@@ -1,6 +1,7 @@
 ﻿using backend.Models.Entity;
 using backend.Models.Entity.Bombs;
 using backend.Models.Entity.Ships;
+using backend.Strategies.Attacks.Damage;
 using Shared;
 
 namespace backend.Strategies.Attacks
@@ -15,6 +16,7 @@ namespace backend.Strategies.Attacks
         protected int HealthDamage = 0;
         protected int ArmourDamage = 0;
         protected GameBoard? gameBoard = null;
+        protected BaseDamageHandler? damageHandler = null;
 
         public List<ShipCoordinate> Attack( BombType attackBomb, int x, int y, GameBoard gameBoard)
         {
@@ -79,7 +81,24 @@ namespace backend.Strategies.Attacks
 
         public abstract void SetupWeapons();
         public abstract void AttackTarget();
-        public abstract void RemoveArmour();
-        public abstract void RemoveHealth();
+        //public virtual void RemoveArmour()
+        //{
+        //    if (targetShip.IsSunk()) targetShip.Stats.ArmourCount = 0;
+        //    else
+        //    {
+        //        targetShip.Stats.ArmourCount -= ArmourDamage;
+
+        //    }
+        //}
+
+        public virtual void RemoveHealth()
+        {
+            if (targetShip.IsSunk()) targetShip.Stats.HealthCount = 0;
+            else
+            {
+                targetShip.Stats.HealthCount -= HealthDamage;
+
+            }
+        }
     }
 }

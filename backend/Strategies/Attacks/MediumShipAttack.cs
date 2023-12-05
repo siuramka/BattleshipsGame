@@ -1,8 +1,10 @@
 ﻿using backend.Models.Entity;
 using backend.Models.Entity.Bombs;
+using backend.Models.Entity.Bombs.BigBomb;
 using backend.Models.Entity.Bombs.MediumBomb;
 using backend.Models.Entity.Bombs.SmallBomb;
 using backend.Models.Entity.Ships;
+using backend.Strategies.Attacks.Damage;
 using backend.Strategies.Ships;
 using Shared;
 
@@ -20,43 +22,23 @@ namespace backend.Strategies.Attacks
             else
             {
                 RemoveHealth();
-                RemoveArmour();
+                //RemoveArmour();
             }
 
         }
 
-        public override void RemoveArmour()
-        {
-            if (bombType == BombType.MissileBomb && targetShip.Stats.ArmourCount >= ArmourDamage)
-            {
-                targetShip.Stats.ArmourCount -= ArmourDamage;
-            }
-
-            if (bombType == BombType.AtomicBomb && targetShip.Stats.ArmourCount >= ArmourDamage)
-            {
-                targetShip.Stats.ArmourCount -= ArmourDamage * 2;
-            }
-        }
-
-        public override void RemoveHealth()
-        {
-            if (bombType == BombType.MissileBomb && targetShip.Stats.HealthCount >= HealthDamage)
-            {
-                targetShip.Stats.HealthCount -= HealthDamage;
-            }
-
-            if (bombType == BombType.AtomicBomb && targetShip.Stats.HealthCount >= HealthDamage)
-            {
-                targetShip.Stats.HealthCount -= HealthDamage * 2;
-            }
-        }
 
         public override void SetupWeapons()
         {
-            bombFactory = new MediumBombFactory();
-            attackStrategy = new MediumBombAttackStrategy();
-            HealthDamage = 200;
-            ArmourDamage = 400;
+            bombFactory = new BigBombFactory();
+            attackStrategy = new BigBombAttackStrategy();
+
+            var h1 = new BombDamageHandler();
+            var h3 = new ShipDamageAttackHandler();
+
+            h1.SetNext(h3);
+
+            HealthDamage = h1.GetDamage(gameBoard, HealthDamage);
         }
     }
 }

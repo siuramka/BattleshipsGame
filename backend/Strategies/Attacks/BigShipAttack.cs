@@ -3,6 +3,7 @@ using backend.Models.Entity.Bombs;
 using backend.Models.Entity.Bombs.BigBomb;
 using backend.Models.Entity.Bombs.SmallBomb;
 using backend.Models.Entity.Ships;
+using backend.Strategies.Attacks.Damage;
 using backend.Strategies.Ships;
 using Shared;
 
@@ -15,7 +16,7 @@ namespace backend.Strategies.Attacks
         {
 
             RemoveHealth();
-            RemoveArmour();
+            //RemoveArmour();
         }
         public override List<ShipCoordinate> GetHitCoordinates(int x, int y, List<ShipCoordinate> hitableCordinates)
         {
@@ -52,38 +53,20 @@ namespace backend.Strategies.Attacks
 
             return hitShipCoordinates;
         }
-        public override void RemoveArmour()
-        {
-            if (bombType == BombType.MissileBomb && targetShip.Stats.ArmourCount >= ArmourDamage)
-            {
-                targetShip.Stats.ArmourCount -= ArmourDamage * 1.5;
-            }
-
-            if (bombType == BombType.AtomicBomb && targetShip.Stats.ArmourCount >= ArmourDamage)
-            {
-                targetShip.Stats.ArmourCount -= ArmourDamage * 3;
-            }
-        }
-
-        public override void RemoveHealth()
-        {
-            if (bombType == BombType.MissileBomb && targetShip.Stats.HealthCount >= HealthDamage)
-            {
-                targetShip.Stats.HealthCount -= HealthDamage * 1.5;
-            }
-
-            if (bombType == BombType.AtomicBomb && targetShip.Stats.HealthCount >= HealthDamage)
-            {
-                targetShip.Stats.HealthCount -= HealthDamage * 3;
-            }
-        }
 
         public override void SetupWeapons()
         {
             bombFactory = new BigBombFactory();
             attackStrategy = new BigBombAttackStrategy();
-            HealthDamage = 500;
-            ArmourDamage = 700;
+
+            var h1 = new BombDamageHandler();
+            var h2 = new FleetDamageHandler();
+            var h3 = new ShipDamageAttackHandler();
+
+            h1.SetNext(h2);
+            h2.SetNext(h3);
+
+            HealthDamage = h1.GetDamage(gameBoard, HealthDamage);
         }
     }
 }

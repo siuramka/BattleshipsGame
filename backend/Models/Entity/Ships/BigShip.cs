@@ -11,7 +11,7 @@ namespace backend.Models.Entity.Ships
     {
         public BigShip()
         {
-            Stats = new Statistics(9000, 9000);
+            Stats = new Statistics(9000);
         }
 
         public BigShip(BigShip ship)

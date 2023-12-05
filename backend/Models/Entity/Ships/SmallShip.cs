@@ -11,7 +11,7 @@ public class SmallShip : Ship
 {
     public SmallShip()
     {
-        Stats = new Statistics(1000, 1000);
+        Stats = new Statistics(1000);
     }
 
     public SmallShip(SmallShip ship) {

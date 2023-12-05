@@ -357,7 +357,7 @@ public class GameHub : Hub
         var currentPlayer = gameFacade.GetCurrentPlayer();
         var playerShips = currentPlayer.OwnBoard.GetShips();
 
-        var shipStats = playerShips.Select(s => new ShipStats {ShipType = s.ShipType, Stats = new Statistics(s.Stats.HealthCount, s.Stats.ArmourCount) });
+        var shipStats = playerShips.Select(s => new ShipStats {ShipType = s.ShipType, Stats = new Statistics(s.Stats.HealthCount) });
 
         await Clients.Client(currentPlayer.Id).SendAsync("ShipsStats", shipStats);
     }
@@ -369,7 +369,7 @@ public class GameHub : Hub
         var enemyPlayer = gameFacade.GetEnemyPlayer();
         var playerShips = enemyPlayer.OwnBoard.GetShips();
 
-        var shipStats = playerShips.Select(s => new ShipStats { ShipType = s.ShipType, Stats = new Statistics(s.Stats.HealthCount, s.Stats.ArmourCount) });
+        var shipStats = playerShips.Select(s => new ShipStats { ShipType = s.ShipType, Stats = new Statistics(s.Stats.HealthCount) });
 
         await Clients.Client(enemyPlayer.Id).SendAsync("ShipsStats", shipStats);
     }
