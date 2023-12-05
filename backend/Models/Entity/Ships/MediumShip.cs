@@ -50,15 +50,6 @@ namespace backend.Models.Entity.Ships
             return new MediumShip(this);
         }
 
-        public override Ship GetShip(ShipCoordinate c)
-        {
-            if (Coordinates.Contains(c))
-            {
-                return this;
-            }
-            return null;
-        }
-
         public override int Accept(ShipInspector shipInspector)
         {
             return shipInspector.visit(this);

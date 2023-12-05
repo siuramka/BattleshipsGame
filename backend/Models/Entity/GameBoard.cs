@@ -58,9 +58,9 @@ public class GameBoard
     }
     public Ship GetHitShip(ShipCoordinate coordinate)
     {
-        foreach(var hitShip in _battleships)
+        foreach(var hitShip in _battleships.getItems())
         {
-            if (hitShip.Coordinates.Contains(coordinate))
+            if (hitShip.Coordinates.getItems().Contains(coordinate))
                 return hitShip;
         }
         return null;

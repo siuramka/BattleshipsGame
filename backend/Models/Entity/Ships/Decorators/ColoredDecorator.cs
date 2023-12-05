@@ -64,11 +64,6 @@ namespace backend.Models.Entity.Ships.Decorators
             return new ColoredDecorator(this);
         }
 
-        public override Ship GetShip(ShipCoordinate coordinate)
-        {
-            return null;
-        }
-
         public override int Accept(ShipInspector shipInspector)
         {
             return 0;
