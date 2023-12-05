@@ -1,6 +1,7 @@
 ﻿using backend.Models.Entity.Bombs;
 using backend.Strategies;
 using backend.Strategies.Attacks;
+using backend.Visitor;
 
 namespace backend.Models.Entity.Ships.Decorators
 {
@@ -57,6 +58,16 @@ namespace backend.Models.Entity.Ships.Decorators
         public override Ship ShallowCopy()
         {
             return new FlagDecorator(this);
+        }
+
+        public override Ship GetShip(ShipCoordinate coordinate)
+        {
+            return null;
+        }
+
+        public override int Accept(ShipInspector shipInspector)
+        {
+            return 0;
         }
     }
 }

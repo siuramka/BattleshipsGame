@@ -7,6 +7,7 @@ using Shared;
 using Microsoft.AspNetCore.SignalR;
 using backend.Service;
 using backend.Strategies.Attacks;
+using backend.Visitor;
 
 namespace backend.Command
 {
@@ -57,6 +58,26 @@ namespace backend.Command
             
             List<ShipCoordinate> hitShipCoordinates = attack.Attack(attackBomb, x, y, enemyBoard);
             List<ShipCoordinate> missedCoordinates = enemyBoard.GetMissedCoordinates();
+            List<Ship> sunkShips = new List<Ship>();
+
+            foreach(var hitCoord in hitShipCoordinates)
+            {
+                if(enemyBoard.GetHitShip(hitCoord) != null)
+                {
+                    if (enemyBoard.GetHitShip(hitCoord).IsSunk() && !sunkShips.Contains(enemyBoard.GetHitShip(hitCoord)))
+                    {
+                        sunkShips.Add(enemyBoard.GetHitShip(hitCoord));
+                    }
+                }
+            }
+
+            int total = 0;
+            ShipInspector inspector = new ShipInspection();
+            foreach (var hitShip in sunkShips)
+            {
+                total = total + hitShip.Accept(inspector);
+            }
+            this.attacker.Score += total;
 
             foreach (var hitCoord in hitShipCoordinates)
             {

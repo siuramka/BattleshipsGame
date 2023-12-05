@@ -36,6 +36,15 @@ public class GameBoard
     {
         _battleships.Add(ship);
     }
+    public Ship GetHitShip(ShipCoordinate coordinate)
+    {
+        foreach(var hitShip in _battleships)
+        {
+            if (hitShip.Coordinates.Contains(coordinate))
+                return hitShip;
+        }
+        return null;
+    }
     public void ReplaceShipAt(int index, Ship ship)
     {
         if (index >= _battleships.Count)

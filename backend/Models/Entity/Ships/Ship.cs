@@ -3,6 +3,7 @@ using backend.Strategies;
 using Shared;
 using backend.Models.Entity.Bombs;
 using backend.Strategies.Attacks;
+using backend.Visitor;
 
 namespace backend.Models.Entity.Ships
 {
@@ -76,5 +77,9 @@ namespace backend.Models.Entity.Ships
 
         public abstract Ship ShallowCopy();
         public abstract Ship DeepCopy();
+
+        public abstract Ship GetShip(ShipCoordinate coordinate);
+
+        public abstract int Accept(ShipInspector shipInspector);
     }
 }

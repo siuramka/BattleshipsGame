@@ -3,6 +3,7 @@ using backend.Models.Entity.Bombs.SmallBomb;
 using backend.Strategies;
 using backend.Strategies.Attacks;
 using backend.Strategies.Ships;
+using backend.Visitor;
 using Shared;
 
 namespace backend.Models.Entity.Ships;
@@ -44,5 +45,19 @@ public class SmallShip : Ship
     public override Ship ShallowCopy()
     {
         return new SmallShip(this);
+    }
+
+    public override Ship GetShip(ShipCoordinate c)
+    {
+        if (Coordinates.Contains(c))
+        {
+            return this;
+        }
+        return null;
+    }
+
+    public override int Accept(ShipInspector shipInspector)
+    {
+        return shipInspector.visit(this);
     }
 }
