@@ -10,7 +10,7 @@ namespace backend.Models.Entity.Ships
 {
     public abstract class Ship
     {
-        public ShipCoordinatesCollection Coordinates = new ShipCoordinatesCollection();
+        private ShipCoordinatesCollection Coordinates = new ShipCoordinatesCollection();
         public int Size { get; set; }
         public bool IsVertical { get; set; }
         public ShipType ShipType { get; set; }
