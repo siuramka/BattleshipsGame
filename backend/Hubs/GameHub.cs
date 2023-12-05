@@ -2,6 +2,7 @@
 using backend.Manager;
 using backend.Models.Entity;
 using backend.Models.Entity.GameBoardExtensions;
+using backend.Models.Entity.Proxy;
 using backend.Models.Entity.Ships;
 using backend.Models.Entity.Ships.Decorators;
 using backend.Models.Entity.Ships.Factory;
@@ -9,6 +10,7 @@ using backend.Models.Entity.Ships.Generator;
 using backend.Observer;
 using backend.Service;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.FileSystemGlobbing.Internal.PathSegments;
 using Shared;
 using Shared.Transfer;
 using System.Collections.Generic;
@@ -34,11 +36,15 @@ public class GameHub : Hub
         GameFacade gameFacade = new GameFacade(Context.ConnectionId);
         var playerName = gameFacade.EmptyGameExist() ? "Player2" : "Player1"; // Player1 if hes the first to join the game
         var player = new Player { Id = Context.ConnectionId, Name = playerName };
+        ProxyPlayerImage proxyPlayerImage = new ProxyPlayerImage(player);
+        DisplayPlayerImage(proxyPlayerImage);
+        await Clients.Client(player.Id).SendAsync("SetIcon", player.Icon);
+
         Game game = new Game();
 
         ThemeImplementor themeImplementor = new ConcreteImplementorLight();
         ThemeAbstraction themeAbstraction = new LightTheme(themeImplementor);
-        player.OwnBoard.theme = themeAbstraction;
+        player.OwnBoard.SetTheme(themeAbstraction);
         Color background = themeAbstraction.Background();
         string text = themeAbstraction.Text();
         Color textColor = themeAbstraction.TextColor();
@@ -67,6 +73,12 @@ public class GameHub : Hub
 
     }
 
+    public void DisplayPlayerImage(IGameAsset playerImage)
+    {
+        // Display player image using the common interface
+        playerImage.GetImage();
+    }
+
     public async Task GenerateRandomShips()
     {
         GameFacade gameFacade = new GameFacade(Context.ConnectionId);
@@ -82,6 +94,23 @@ public class GameHub : Hub
         Color textColor = themeAbstraction.TextColor();
         Color buttonBackgroundColor = themeAbstraction.ButtonBackgroundColor();
         await Clients.Client(gameFacade.GetCurrentPlayer().Id).SendAsync("SetTheme", background, text, textColor, buttonBackgroundColor);
+    }
+
+    public async Task ClientGlobalMessage(string message)
+    {
+        GameFacade gameFacade = new GameFacade(Context.ConnectionId);
+        var currentPlayer = gameFacade.GetCurrentPlayer();
+        var enemyPlayer = gameFacade.GetEnemyPlayer();
+
+        if (currentPlayer != null)
+        {
+            await Clients.Client(currentPlayer.Id).SendAsync("GlobalMessage", string.Format("{0}: {1}", currentPlayer.Name, message));
+        }
+
+        if (enemyPlayer != null)
+        {
+            await Clients.Client(enemyPlayer.Id).SendAsync("GlobalMessage", string.Format("{0}: {1}", currentPlayer.Name, message));
+        }
     }
 
     private async Task SetupShips(Game game)
@@ -236,8 +265,41 @@ public class GameHub : Hub
         }
     }
 
+    public async Task RestartGame()
+    {
+        GameFacade gameFacade = new GameFacade(Context.ConnectionId);
+        var currentPlayer = gameFacade.GetCurrentPlayer();
+        var enemyPlayer = gameFacade.GetEnemyPlayer();
+
+        var currentGame = gameFacade.GetCurrentGame();
+
+        currentGame.RestoreFromRestorePoint();
+
+        var initialPlayerShips = currentPlayer.OwnBoard.GetShips();
+        var initialEnemyPlayerShips = enemyPlayer.OwnBoard.GetShips();
+
+        await Clients.Client(currentPlayer.Id).SendAsync("GameReset", true);
+        await Clients.Client(enemyPlayer.Id).SendAsync("GameReset", false);
+
+        foreach(var ship in initialPlayerShips)
+        {
+            await Clients.Client(currentPlayer.Id).SendAsync("ResetGameShip", new RestartGame {  ShipType = ship.ShipType, PlacedX = ship.PlacedX, PlacedY = ship.PlacedY, Coordinates = ship.GetCoordinates()});
+        }
+
+        foreach (var ship in initialEnemyPlayerShips)
+        {
+            await Clients.Client(enemyPlayer.Id).SendAsync("ResetGameShip", new RestartGame { ShipType = ship.ShipType, PlacedX = ship.PlacedX, PlacedY = ship.PlacedY, Coordinates = ship.GetCoordinates() });
+        }
+    }
+
     private async Task StartGame(Game _currentGame)
     {
+        GameFacade gameFacade = new GameFacade(Context.ConnectionId);
+
+        var currentGame = gameFacade.GetCurrentGame();
+
+        currentGame.CreateRestorePoint();
+
         await Clients.Group(_currentGame.Group.Id).SendAsync("GameStarted", "GameStarted");
 
         await Task.Delay(TimeSpan.FromSeconds(1)); // wait a second
@@ -295,7 +357,7 @@ public class GameHub : Hub
         var currentPlayer = gameFacade.GetCurrentPlayer();
         var playerShips = currentPlayer.OwnBoard.GetShips();
 
-        var shipStats = playerShips.Select(s => new ShipStats {ShipType = s.ShipType, Stats = new Statistics(s.Stats.HealthCount, s.Stats.ArmourCount) });
+        var shipStats = playerShips.Select(s => new ShipStats {ShipType = s.ShipType, Stats = new Statistics(s.Stats.HealthCount) });
 
         await Clients.Client(currentPlayer.Id).SendAsync("ShipsStats", shipStats);
     }
@@ -307,7 +369,7 @@ public class GameHub : Hub
         var enemyPlayer = gameFacade.GetEnemyPlayer();
         var playerShips = enemyPlayer.OwnBoard.GetShips();
 
-        var shipStats = playerShips.Select(s => new ShipStats { ShipType = s.ShipType, Stats = new Statistics(s.Stats.HealthCount, s.Stats.ArmourCount) });
+        var shipStats = playerShips.Select(s => new ShipStats { ShipType = s.ShipType, Stats = new Statistics(s.Stats.HealthCount) });
 
         await Clients.Client(enemyPlayer.Id).SendAsync("ShipsStats", shipStats);
     }

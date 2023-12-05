@@ -3,6 +3,7 @@
 namespace backend.Models.Entity.Ships;
 
 
+[Serializable]
 public class ShipCoordinate
 {
     public int X { get; set; }

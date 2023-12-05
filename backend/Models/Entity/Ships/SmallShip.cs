@@ -12,14 +12,14 @@ public class SmallShip : Ship
 {
     public SmallShip()
     {
-        Stats = new Statistics(1000, 1000);
+        Stats = new Statistics(1000);
     }
 
     public SmallShip(SmallShip ship) {
         Size = ship.Size;
         IsVertical = ship.IsVertical;
         ShipType = ship.ShipType;
-        foreach(ShipCoordinate coordinate in ship.Coordinates)
+        foreach(ShipCoordinate coordinate in ship.GetCoordinates())
         {
             AddCoordinate(coordinate);
         }

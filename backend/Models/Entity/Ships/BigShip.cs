@@ -12,7 +12,7 @@ namespace backend.Models.Entity.Ships
     {
         public BigShip()
         {
-            Stats = new Statistics(9000, 9000);
+            Stats = new Statistics(9000);
         }
 
         public BigShip(BigShip ship)
@@ -20,7 +20,7 @@ namespace backend.Models.Entity.Ships
             Size = ship.Size;
             IsVertical = ship.IsVertical;
             ShipType = ship.ShipType;
-            foreach (ShipCoordinate coordinate in ship.Coordinates)
+            foreach (ShipCoordinate coordinate in ship.GetCoordinates())
             {
                 AddCoordinate(coordinate);
             }
