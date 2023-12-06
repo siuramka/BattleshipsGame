@@ -972,6 +972,7 @@ namespace WpfApp1
                 Theme.Content = text;
                 UserName.Foreground = textColorF;
                 Histogram.Foreground = textColorF;
+                StateInfo.Foreground = textColorF;
                 Theme.Background = buttonBackground;
                 TestModeButton.Background = buttonBackground;
                 RandomShips.Background = buttonBackground;

@@ -300,6 +300,6 @@
                 </Style>
             </Button.Resources>
         </Button>
-        <Image x:Name="PlayerIcon" Grid.Column="2" HorizontalAlignment="Left" Height="25" Margin="14,5,0,0" VerticalAlignment="Top" Width="25"/>
+        <Image x:Name="PlayerIcon" Grid.Column="2" HorizontalAlignment="Left" Height="25" Margin="14,5,0,0" VerticalAlignment="Top" Width="25" Source="/0.png"/>
     </Grid>
 </Window>
