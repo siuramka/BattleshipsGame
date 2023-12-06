@@ -26,6 +26,7 @@ using WpfApp1.States;
 using System.Diagnostics;
 using System.Data;
 using WpfApp1.Interpreter;
+using WpfApp1.Mediator;
 
 //// if you want to update UI state, you need to call your change in this
 /// as UI changes only allowed on the main thread, and this calls from the main thread. lol
@@ -1010,8 +1011,18 @@ namespace WpfApp1
 
         private void CommandInput_KeyUp(object sender, KeyEventArgs e)
         {
+            LocalMessageConcreteMediator localMessageMediator = new LocalMessageConcreteMediator(
+                new ServerMessages(),
+                new DebuggerMessages(),
+                new SendLocalMessageExecutable(MessagesListbox, "[DEBUGGER]: Enter button was pressed")
+            );
+
             if (e.Key == Key.Enter)
             {
+                localMessageMediator.Execute();
+
+                localMessageMediator.SendMessage(string.Format("Trying to execute {0}", CommandInput.Text.ToString()));
+
                 if (!CommandInput.Text.StartsWith("/"))
                 {
                     CommandInput.Text = string.Empty;
@@ -1020,23 +1031,23 @@ namespace WpfApp1
 
                 Command command = new Command(CommandInput.Text);
                 MessageCommandInterpreter interpreter = new MessageCommandInterpreter();
-
                 interpreter.Interpret(command);
 
                 List<Executable> executableList = new List<Executable>();
                 Executable successMessage = new SendLocalMessageExecutable(MessagesListbox, string.Format("Command \"{0}\" successfuly executed", command.ParsedCommand));
 
+                bool executed = true;
                 switch (command.ParsedCommand.Name)
                 {
                     case TextCommand.Msg:
                         executableList.Add(successMessage);
                         executableList.Add(new SendGlobalMessageExecutable(_connection, string.Join(" ", command.ParsedCommand.Arguments)));
                         Executables executables = new Executables(executableList);
-                        executables.execute();
+                        executables.Execute();
                         break;
                     case TextCommand.Clear:
                         Executable clear = new ClearTextBoxExecutable(MessagesListbox);
-                        clear.execute();
+                        clear.Execute();
                         break;
                     case TextCommand.FreshMsg:
                         Executables successMessageWithClear = new Executables(new List<Executable>
@@ -1047,11 +1058,19 @@ namespace WpfApp1
                         executableList.Add(successMessageWithClear);
                         executableList.Add(new SendGlobalMessageExecutable(_connection, string.Join(" ", command.ParsedCommand.Arguments)));
                         executables = new Executables(executableList);
-                        executables.execute();
+                        executables.Execute();
                         break;
                     default:
+                        executed = false;
+                        localMessageMediator.SendMessageToServer(_connection, string.Format("User tried to execute invalid command - {0}", CommandInput.Text));
+                        localMessageMediator.SendMessage(string.Format("Command failed to execute {0}", CommandInput.Text));
                         MessagesListbox.Items.Add(string.Format("Unknown command \"{0}\"", command.ParsedCommand));
                         break;
+                }
+
+                if (executed)
+                {
+                    localMessageMediator.SendMessage(string.Format("Command executed successfully {0}", CommandInput.Text));
                 }
 
                 CommandInput.Text = string.Empty;

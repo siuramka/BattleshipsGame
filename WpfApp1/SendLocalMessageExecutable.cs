@@ -13,7 +13,7 @@ namespace WpfApp1
             _message = message;
         }
 
-        public void execute()
+        public void Execute()
         {
             MessagesList.Items.Add(_message);
         }

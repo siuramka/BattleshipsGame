@@ -6,8 +6,10 @@ namespace backend.Models.Entity.Ships
 {
     public class ServerMessages
     {
+        HubConnection _connection;
         public async void SendMessageToServer(HubConnection connection, string message)
         {
+            _connection = connection;
             await connection.SendAsync("ClientMessage", message);
             connection.On<string>("ServerDebuggerMessageResponse", ServerDebuggerMessageResponse);
         }
@@ -17,6 +19,7 @@ namespace backend.Models.Entity.Ships
             string msg = "[SERVER]: " + message;
             System.Diagnostics.Debug.WriteLine(msg);
             Console.WriteLine(msg);
+            _connection.Remove("ServerDebuggerMessageResponse");
         }
     }
 }

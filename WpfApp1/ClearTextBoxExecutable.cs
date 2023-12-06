@@ -11,7 +11,7 @@ namespace WpfApp1
             MessagesList = messagesList;
         }
 
-        public void execute()
+        public void Execute()
         {
             MessagesList.Items.Clear();
         }

@@ -2,6 +2,6 @@
 {
     public interface Executable
     {
-        void execute();
+        void Execute();
     }
 }

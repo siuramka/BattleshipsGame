@@ -13,11 +13,11 @@ namespace WpfApp1
             }
         }
 
-        public void execute()
+        public void Execute()
         {
             foreach(Executable executable in children)
             {
-                executable.execute();
+                executable.Execute();
             }
         }
     }
