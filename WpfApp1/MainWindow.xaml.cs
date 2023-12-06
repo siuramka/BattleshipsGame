@@ -305,12 +305,20 @@ namespace WpfApp1
             _connection.On<string>("GlobalMessage", SendMessageToClient);
             _connection.On<string>("SetIcon", HandlePlayerIcon);
             _connection.On<int>("SetCoins", HandlePlayerCoins);
+            _connection.On<int>("SetMoves", HandlePlayerMoves);
+        }
+
+        private void HandlePlayerMoves(int moves)
+        {
+            this.Dispatcher.Invoke(() => {
+                Coins_MovesLeft.Content = moves;
+            });
         }
 
         private void HandlePlayerCoins(int coins)
         {
             this.Dispatcher.Invoke(() => {
-                CoinsLeft.Content = coins;
+                Coins_MovesLeft.Content = coins;
             });
         }
 
@@ -627,6 +635,7 @@ namespace WpfApp1
             {
                 TestModeButton.IsEnabled = true;
                 ResetGame.IsEnabled = true;
+                Coins_MovesLeftLabel.Content = "Moves left";
             });
 
             _connection.SendAsync("ShipsStats");
@@ -989,8 +998,8 @@ namespace WpfApp1
                 UserName.Foreground = textColorF;
                 Histogram.Foreground = textColorF;
                 StateInfo.Foreground = textColorF;
-                CoinsLeft.Foreground = textColorF;
-                CoinsLeftLabel.Foreground = textColorF;
+                Coins_MovesLeft.Foreground = textColorF;
+                Coins_MovesLeftLabel.Foreground = textColorF;
                 Theme.Background = buttonBackground;
                 TestModeButton.Background = buttonBackground;
                 RandomShips.Background = buttonBackground;

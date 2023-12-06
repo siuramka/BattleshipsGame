@@ -97,6 +97,12 @@ namespace backend.Command
                 await opponentClient.SendAsync("GameOver", false);
             }
 
+            if (attacker.Moves == 0)
+            {
+                await attackerClient.SendAsync("GameOver", false);
+                await opponentClient.SendAsync("GameOver", true);
+            }
+
             if (hitShipCoordinates.Any())
             {
                 await attackerClient.SendAsync("YourTurn", "YourTurn");

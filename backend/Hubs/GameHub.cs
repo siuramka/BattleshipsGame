@@ -313,11 +313,12 @@ public class GameHub : Hub
         currentGame.CreateRestorePoint();
 
         await Clients.Group(_currentGame.Group.Id).SendAsync("GameStarted", "GameStarted");
+        await Clients.Client(_currentGame.Player1.Id).SendAsync("SetMoves", _currentGame.Player1.Moves);
+        await Clients.Client(_currentGame.Player2.Id).SendAsync("SetMoves", _currentGame.Player2.Moves);
 
         await Task.Delay(TimeSpan.FromSeconds(1)); // wait a second
 
         await Clients.Client(_currentGame.Player1.Id).SendAsync("YourTurn", "YourTurn"); // Player1 starts the game
-
     }
 
 
@@ -332,6 +333,8 @@ public class GameHub : Hub
         var shotCommand = new ShotCommand(currentPlayer, enemyPlayer, move.X, move.Y, move.TypeOfShip,
             move.IsVertical, move.AttackBomb, GameManager.Instance, Clients.Client(currentPlayer.Id),
             Clients.Client(enemyPlayer.Id), enemyPlayer.OwnBoard);
+        currentPlayer.Moves -= move.AttackBomb == BombType.MissileBomb ? 1 : 2;
+        await Clients.Client(currentPlayer.Id).SendAsync("SetMoves", currentPlayer.Moves);
 
         await shotCommand.Execute();
         await ShipsStats();

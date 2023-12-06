@@ -12,4 +12,5 @@ public class Player
     public bool IsInTestMode { get; set; } = false;
     public string? Icon { get; set; }
     public int Coins { get; set; } = 8;
+    public int Moves { get; set; } = 10;
 }
