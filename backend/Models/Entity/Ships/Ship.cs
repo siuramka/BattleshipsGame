@@ -14,6 +14,8 @@ namespace backend.Models.Entity.Ships
         public int Size { get; set; }
         public bool IsVertical { get; set; }
         public ShipType ShipType { get; set; }
+        public int Price { get; set; }
+        public int ShootsLeft { get; set; }
         public abstract AttackTemplate GetAttackTemplate();
         public Statistics? Stats { get; set;  }
 
@@ -70,11 +72,11 @@ namespace backend.Models.Entity.Ships
         {
             if (!IsVertical)
             {
-                return $"1x{Size} {ShipType}";
+                return $"1x{Size} {ShipType} Price: {Price}";
             }
             else
             {
-                return $"1x{Size} Vertical {ShipType}";
+                return $"1x{Size} Vertical {ShipType} Price: {Price}";
             }
             
         }

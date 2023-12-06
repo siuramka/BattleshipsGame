@@ -28,5 +28,16 @@ namespace backend.Models.Entity.Ships
             return this;
         }
 
+        public IShipBuilder SetPrice(int price)
+        {
+            smallShip.Price = price;
+            return this;
+        }
+
+        public IShipBuilder SetShootsLeft(int shootsLeft)
+        {
+            smallShip.ShootsLeft = shootsLeft;
+            return this;
+        }
     }
 }

@@ -36,14 +36,15 @@ public class GameHub : Hub
         GameFacade gameFacade = new GameFacade(Context.ConnectionId);
         var playerName = gameFacade.EmptyGameExist() ? "Player2" : "Player1"; // Player1 if hes the first to join the game
         var player = new Player { Id = Context.ConnectionId, Name = playerName };
+        
         ProxyPlayerImage proxyPlayerImage = new ProxyPlayerImage(player);
         DisplayPlayerImage(proxyPlayerImage);
         await Clients.Client(player.Id).SendAsync("SetIcon", player.Icon);
 
         Game game = new Game();
 
-        ThemeImplementor themeImplementor = new ConcreteImplementorLight();
-        ThemeAbstraction themeAbstraction = new LightTheme(themeImplementor);
+        ThemeImplementor themeImplementor = new ConcreteImplementorDark();
+        ThemeAbstraction themeAbstraction = new DarkTheme(themeImplementor);
         player.OwnBoard.SetTheme(themeAbstraction);
         Color background = themeAbstraction.Background();
         string text = themeAbstraction.Text();
@@ -70,7 +71,6 @@ public class GameHub : Hub
         await Groups.AddToGroupAsync(game.Player2.Id, game.Group.Id);
         await Clients.Client(player.Id).SendAsync("WaitingForOpponent", player.Name);
         await SetupShips(game);
-
     }
 
     public void DisplayPlayerImage(IGameAsset playerImage)
@@ -124,19 +124,31 @@ public class GameHub : Hub
 
         await s.NotifyObservers();
 
+        await Clients.Client(game.Player1.Id).SendAsync("SetCoins", game.Player1.Coins);
+        await Clients.Client(game.Player2.Id).SendAsync("SetCoins", game.Player2.Coins);
+
         //send to frontend for players to setup ships
         //await Clients.Group(gameId).SendAsync("SetupShips", "");
     }
     // _connection.SendAsync("SetShip", size, x, y, vertical);
-    public async Task AddShipToPlayer(int x, int y, ShipType shipType, bool isVertical)
+    public async Task AddShipToPlayer(int x, int y, ShipType shipType, bool isVertical, int price)
     {
 
         GameFacade gameFacade = new GameFacade(Context.ConnectionId);
         var currentPlayer = gameFacade.GetCurrentPlayer();
+        if (currentPlayer.Coins >= price)
+        {
+            var addedShip = gameFacade.AddShipToPlayer(shipType, isVertical, x, y);
+            currentPlayer.Coins -= price;
 
-        var addedShip = gameFacade.AddShipToPlayer(shipType, isVertical, x, y);
+            await Clients.Client(currentPlayer.Id).SendAsync("SetCoins", currentPlayer.Coins);
+            await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", new SetupShipResponse(true, addedShip.GetCoordinates(), shipType));
+        }
+        else
+        {
 
-        await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", new SetupShipResponse(true, addedShip.GetCoordinates(), shipType));
+            await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", new SetupShipResponse(false, new List<ShipCoordinate>(), ShipType.SmallShip));
+        }
     }
     
     public async Task ClientMessage(string message)
@@ -305,6 +317,7 @@ public class GameHub : Hub
         await Task.Delay(TimeSpan.FromSeconds(1)); // wait a second
 
         await Clients.Client(_currentGame.Player1.Id).SendAsync("YourTurn", "YourTurn"); // Player1 starts the game
+
     }
 
 

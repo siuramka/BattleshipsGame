@@ -304,6 +304,14 @@ namespace WpfApp1
             _connection.On<Shared.Color, string, Shared.Color, Shared.Color>("SetTheme", HandleThemeMode);
             _connection.On<string>("GlobalMessage", SendMessageToClient);
             _connection.On<string>("SetIcon", HandlePlayerIcon);
+            _connection.On<int>("SetCoins", HandlePlayerCoins);
+        }
+
+        private void HandlePlayerCoins(int coins)
+        {
+            this.Dispatcher.Invoke(() => {
+                CoinsLeft.Content = coins;
+            });
         }
 
         private void HandlePlayerIcon(string icon)
@@ -659,7 +667,7 @@ namespace WpfApp1
                 return;
             }
 
-            _connection.SendAsync("AddShipToPlayer", tag.x, tag.y, tag.Ship.ShipType, tag.Ship.IsVertical);
+            _connection.SendAsync("AddShipToPlayer", tag.x, tag.y, tag.Ship.ShipType, tag.Ship.IsVertical, tag.Ship.Price);
         }
 
         private void HandleShipAttacks(ShipType shipType)
@@ -788,6 +796,14 @@ namespace WpfApp1
                         MyButtons[coordinate.Y, coordinate.X].ContextMenu.Items.Add(item);
                     });
                 }
+            }
+            else
+            {
+                this.Dispatcher.Invoke(() =>
+                {
+                    Executable successMessage = new SendLocalMessageExecutable(MessagesListbox, ("You dont have enough coins to place that ship"));
+                    successMessage.execute();
+                });
             }
 
             EnableMyBoard(true);
@@ -973,6 +989,8 @@ namespace WpfApp1
                 UserName.Foreground = textColorF;
                 Histogram.Foreground = textColorF;
                 StateInfo.Foreground = textColorF;
+                CoinsLeft.Foreground = textColorF;
+                CoinsLeftLabel.Foreground = textColorF;
                 Theme.Background = buttonBackground;
                 TestModeButton.Background = buttonBackground;
                 RandomShips.Background = buttonBackground;

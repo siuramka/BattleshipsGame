@@ -8,5 +8,8 @@ namespace backend.Models.Entity.Ships
         IShipBuilder SetIsVertical(bool isVertical);
         IShipBuilder SetType(ShipType type);
         Ship Build();
+        IShipBuilder SetPrice(int price);
+        IShipBuilder SetShootsLeft(int shootsLeft);
+
     }
 }

@@ -20,6 +20,8 @@
                 .SetSize(1)
                 .SetIsVertical(false)
                 .SetType(Shared.ShipType.SmallShip)
+                .SetPrice(1)
+                .SetShootsLeft(5)
                 .Build();
         }
 
@@ -29,6 +31,8 @@
                 .SetSize(2)
                 .SetIsVertical(false)
                 .SetType(Shared.ShipType.MediumShip)
+                .SetPrice(2)
+                .SetShootsLeft(4)
                 .Build();
         }
 
@@ -38,6 +42,8 @@
                 .SetSize(3)
                 .SetIsVertical(false)
                 .SetType(Shared.ShipType.BigShip)
+                .SetPrice(3)
+                .SetShootsLeft(3)
                 .Build();
         }
     }

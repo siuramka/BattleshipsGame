@@ -11,4 +11,5 @@ public class Player
     public bool HasSetupShips { get; set; } = false;
     public bool IsInTestMode { get; set; } = false;
     public string? Icon { get; set; }
+    public int Coins { get; set; } = 8;
 }
