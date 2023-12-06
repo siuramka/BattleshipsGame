@@ -812,7 +812,7 @@ namespace WpfApp1
                 this.Dispatcher.Invoke(() =>
                 {
                     Executable successMessage = new SendLocalMessageExecutable(MessagesListbox, ("You dont have enough coins to place that ship"));
-                    successMessage.execute();
+                    successMessage.Execute();
                 });
             }
 
