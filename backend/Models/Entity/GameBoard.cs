@@ -54,6 +54,7 @@ public class GameBoard
     }
     public void AddShip(Ship ship)
     {
+        ship.ID = _battleships.getItems().Count;
         _battleships.AddItem(ship);
     }
     public Ship GetHitShip(ShipCoordinate coordinate)

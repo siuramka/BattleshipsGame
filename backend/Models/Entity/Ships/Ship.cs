@@ -5,12 +5,15 @@ using backend.Models.Entity.Bombs;
 using backend.Strategies.Attacks;
 using backend.Models.Entity.Iterator;
 using backend.Visitor;
+using backend.Command;
 
 namespace backend.Models.Entity.Ships
 {
     public abstract class Ship
     {
         private ShipCoordinatesCollection Coordinates = new ShipCoordinatesCollection();
+
+        public int ID { get; set; }
         public int Size { get; set; }
         public bool IsVertical { get; set; }
         public ShipType ShipType { get; set; }

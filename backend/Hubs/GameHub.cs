@@ -142,12 +142,11 @@ public class GameHub : Hub
             currentPlayer.Coins -= price;
 
             await Clients.Client(currentPlayer.Id).SendAsync("SetCoins", currentPlayer.Coins);
-            await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", new SetupShipResponse(true, addedShip.GetCoordinates(), shipType));
+            await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", new SetupShipResponse(true, addedShip.GetCoordinates(), shipType, addedShip.ID));
         }
         else
         {
-
-            await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", new SetupShipResponse(false, new List<ShipCoordinate>(), ShipType.SmallShip));
+            await Clients.Client(currentPlayer.Id).SendAsync("SetupShipResponse", new SetupShipResponse(false, new List<ShipCoordinate>(), ShipType.SmallShip, -1));
         }
     }
     
@@ -328,13 +327,15 @@ public class GameHub : Hub
         GameFacade gameFacade = new GameFacade(Context.ConnectionId);
         var currentPlayer = gameFacade.GetCurrentPlayer();
         var enemyPlayer = gameFacade.GetEnemyPlayer();
-
+        int test = currentPlayer.OwnBoard.GetShips()[move.ID].ID;
+        currentPlayer.OwnBoard.GetShips()[move.ID].ShootsLeft--;
         // Create a new instance of ShotCommand and execute it
         var shotCommand = new ShotCommand(currentPlayer, enemyPlayer, move.X, move.Y, move.TypeOfShip,
             move.IsVertical, move.AttackBomb, GameManager.Instance, Clients.Client(currentPlayer.Id),
             Clients.Client(enemyPlayer.Id), enemyPlayer.OwnBoard);
         currentPlayer.Moves -= move.AttackBomb == BombType.MissileBomb ? 1 : 2;
         await Clients.Client(currentPlayer.Id).SendAsync("SetMoves", currentPlayer.Moves);
+        await Clients.Client(currentPlayer.Id).SendAsync("SetLeftShoots", currentPlayer.OwnBoard.GetShips()[move.ID].ID, currentPlayer.OwnBoard.GetShips()[move.ID].ShootsLeft);
 
         await shotCommand.Execute();
         await ShipsStats();

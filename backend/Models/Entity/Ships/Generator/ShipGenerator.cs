@@ -43,6 +43,7 @@ namespace backend.Models.Entity.Ships.Generator
                     if (CanPlaceShip(ships, startX, startY, size, isVertical))
                     {
                         Ship newShip = CreateShip(type, size, isVertical, startX, startY);
+                        newShip.ID = ships.Count;
                         ships.Add(newShip);
                     }
                 }

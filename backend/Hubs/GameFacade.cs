@@ -139,7 +139,7 @@ namespace backend.Hubs
             List<SetupShipResponse> randomShipsTest = new List<SetupShipResponse>();
             foreach (var randomShip in randomShips)
             {
-                randomShipsTest.Add(new SetupShipResponse(true, randomShip.GetCoordinates(), randomShip.ShipType));
+                randomShipsTest.Add(new SetupShipResponse(true, randomShip.GetCoordinates(), randomShip.ShipType, randomShip.ID));
                 currentPlayer.OwnBoard.AddShip(randomShip);
             }
 
