@@ -19,7 +19,13 @@ public class SmallShip : Ship
         Size = ship.Size;
         IsVertical = ship.IsVertical;
         ShipType = ship.ShipType;
-        foreach(ShipCoordinate coordinate in ship.GetCoordinates())
+        Stats = ship.Stats;
+        PlacedX = ship.PlacedX;
+        PlacedY = ship.PlacedY;
+        Price = ship.Price;
+        ShootsLeft = ship.ShootsLeft;
+
+        foreach (ShipCoordinate coordinate in ship.GetCoordinates())
         {
             AddCoordinate(coordinate);
         }
@@ -29,11 +35,14 @@ public class SmallShip : Ship
     {
         SmallShip ship = new SmallShip(this);
         List<ShipCoordinate> coords = GetCoordinates();
-        RemoveAllCoordinates();
+
+        ship.RemoveAllCoordinates();
+
         foreach (ShipCoordinate coordinate in coords)
         {
-            AddCoordinate(coordinate);
+            ship.AddCoordinate(new ShipCoordinate(coordinate.X, coordinate.Y));
         }
+
         return ship;
     }
 

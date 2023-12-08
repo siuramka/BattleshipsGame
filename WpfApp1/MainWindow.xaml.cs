@@ -353,7 +353,7 @@ namespace WpfApp1
         private void HandleOnRestoreGame(bool turn)
         {
             ClearMessages();
-            ClearMessageToShips(); //didint test when adding tehse
+            ClearMessageToShips();
 
             EnableMyBoard(false);
             EnableMyBoard(false);
@@ -361,8 +361,6 @@ namespace WpfApp1
             EnemeyBoardStyles = new Dictionary<int, Style>();
             InitializeUi();
             SendMessageToClient("Game reset!");
-
-            _connection.SendAsync("ShipsStats");
 
             EnableMyBoard(true);
             EnableEnemyBoard(turn);
@@ -743,20 +741,10 @@ namespace WpfApp1
         }
         private void HandleOnSetShipRestart(RestartGame gameRestartShip)
         {
-
             HandleRerenderCoordinates(gameRestartShip.Coordinates);
-
             HandleShipAttacks(gameRestartShip.ShipType);
-
-
             foreach (ShipCoordinate coordinate in gameRestartShip.Coordinates)
             {
-                this.Dispatcher.Invoke(() =>
-                {
-                    Button button = MyButtons[coordinate.Y, coordinate.X];
-                    button.Content = "#";
-                });
-
                 this.Dispatcher.Invoke(() =>
                 {
                     UpdateButtonByCoordinate(MyButtons, coordinate, "#");
@@ -776,8 +764,6 @@ namespace WpfApp1
                     MyButtons[coordinate.Y, coordinate.X].ContextMenu.Items.Add(item);
                 });
             }
-
-            EnableMyBoard(true);
         }
 
         private void HandleOnSetShipResult(SetupShipResponse setupShipResponse)
@@ -861,6 +847,7 @@ namespace WpfApp1
 
         private void ResetGameAction(object sender, RoutedEventArgs e)
         {
+            ShipAttacksBox.Items.Clear();
             _connection.SendAsync("RestartGame");
         }
 

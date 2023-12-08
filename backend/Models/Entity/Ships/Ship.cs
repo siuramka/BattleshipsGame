@@ -17,7 +17,7 @@ namespace backend.Models.Entity.Ships
         public int Price { get; set; }
         public int ShootsLeft { get; set; }
         public abstract AttackTemplate GetAttackTemplate();
-        public Statistics? Stats { get; set;  }
+        public Statistics Stats = new Statistics(0);
 
         public int PlacedX { get; set; }
         public int PlacedY { get; set; }

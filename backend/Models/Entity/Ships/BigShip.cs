@@ -20,6 +20,12 @@ namespace backend.Models.Entity.Ships
             Size = ship.Size;
             IsVertical = ship.IsVertical;
             ShipType = ship.ShipType;
+            Stats = ship.Stats;
+            PlacedX = ship.PlacedX;
+            PlacedY = ship.PlacedY;
+            Price = ship.Price;
+            ShootsLeft = ship.ShootsLeft;
+
             foreach (ShipCoordinate coordinate in ship.GetCoordinates())
             {
                 AddCoordinate(coordinate);
@@ -30,11 +36,15 @@ namespace backend.Models.Entity.Ships
         {
             BigShip ship = new BigShip(this);
             List<ShipCoordinate> coords = GetCoordinates();
-            RemoveAllCoordinates();
+            ship.Stats = new Statistics(Stats.HealthCount);
+
+            ship.RemoveAllCoordinates();
+
             foreach (ShipCoordinate coordinate in coords)
             {
-                AddCoordinate(coordinate);
+                ship.AddCoordinate(new ShipCoordinate(coordinate.X, coordinate.Y));
             }
+
             return ship;
         }
 

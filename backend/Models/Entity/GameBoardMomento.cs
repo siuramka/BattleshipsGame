@@ -17,7 +17,7 @@ namespace backend.Models.Entity
             Battleships = battleships ?? throw new ArgumentNullException(nameof(battleships));
             MissedCoordinates = missedCoordinates ?? throw new ArgumentNullException(nameof(missedCoordinates));
             EnemyAttackShip = enemyAttackShip;
-            this.Theme = theme ?? throw new ArgumentNullException(nameof(theme));
+            Theme = theme ?? throw new ArgumentNullException(nameof(theme));
         }
     }
 }
