@@ -59,12 +59,14 @@ namespace backend.Strategies.Attacks
             bombFactory = new BigBombFactory();
             attackStrategy = new BigBombAttackStrategy();
 
-            var h1 = new BombDamageHandler();
+            var h1 = new AttackDamageHandler();
             var h2 = new FleetDamageHandler();
             var h3 = new ShipDamageAttackHandler();
+            var h4 = new ThemeDamageHandler();
 
             h1.SetNext(h2);
             h2.SetNext(h3);
+            h3.SetNext(h4);
 
             HealthDamage = h1.GetDamage(gameBoard, HealthDamage);
         }

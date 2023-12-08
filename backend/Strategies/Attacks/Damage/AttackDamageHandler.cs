@@ -3,7 +3,7 @@ using Shared;
 
 namespace backend.Strategies.Attacks.Damage
 {
-    public class BombDamageHandler : BaseDamageHandler
+    public class AttackDamageHandler : BaseDamageHandler
     {
         protected override int CalculateDamage(GameBoard gameBoard, int damageSum)
         {

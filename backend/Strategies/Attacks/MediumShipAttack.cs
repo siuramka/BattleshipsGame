@@ -33,7 +33,7 @@ namespace backend.Strategies.Attacks
             bombFactory = new BigBombFactory();
             attackStrategy = new BigBombAttackStrategy();
 
-            var h1 = new BombDamageHandler();
+            var h1 = new AttackDamageHandler();
             var h3 = new ShipDamageAttackHandler();
 
             h1.SetNext(h3);

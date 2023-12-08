@@ -8,7 +8,7 @@ namespace backend.Strategies.Attacks.Damage
         protected override int CalculateDamage(GameBoard gameBoard, int damageSum)
         {
             int damage = damageSum;
-            int standingShipcount = GetStandingShipCount(gameBoard);
+            int standingShipcount = gameBoard.GetStandingShipCount();
 
             if(standingShipcount <= 1)
             {
@@ -26,6 +26,5 @@ namespace backend.Strategies.Attacks.Damage
 
             return GetDamage(gameBoard, damage);
         }
-        private int GetStandingShipCount(GameBoard gameBoard) => gameBoard.GetShips().Where(s => !s.IsSunk()).ToList().Count;
     }
 }

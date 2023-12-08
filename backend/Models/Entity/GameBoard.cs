@@ -44,6 +44,10 @@ public class GameBoard
     {
         return _enemyAttackShip ?? throw new NullReferenceException("Enemy ship doesnt exist");
     }
+    public int GetStandingShipCount()
+    {
+        return GetShips().Where(s => !s.IsSunk()).ToList().Count;
+    }
     public void AddMissed(ShipCoordinate coordinate)
     {
         _missedCoordinates.Add(coordinate);
