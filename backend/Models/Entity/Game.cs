@@ -3,12 +3,12 @@
 public class Game
 {
     public Group Group { get; } = new();
-    public Player Player1 { get; set; }
-    public Player Player2 { get; set; }
+    public Player? Player1 { get; set; }
+    public Player? Player2 { get; set; }
     public bool WaitingForOpponent { get; set; } = true;
 
-    private GameBoardMomento _player1SavedGameboard;
-    private GameBoardMomento _player2SavedGameboard;
+    private GameBoardMomento? _player1SavedGameboard;
+    private GameBoardMomento? _player2SavedGameboard;
 
 
     public bool CreateRestorePoint()

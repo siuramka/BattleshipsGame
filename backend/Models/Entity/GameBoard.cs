@@ -27,7 +27,7 @@ public class GameBoard
 
     public GameBoardMomento CreateMomento()
     {
-        return new GameBoardMomento(_battleships, _missedCoordinates, _enemyAttackShip, _theme);
+        return new GameBoardMomento(GetClonedShipsCollection(), new HashSet<ShipCoordinate>(_missedCoordinates), _enemyAttackShip, _theme);
     }
     public void RestoreFromMomento(GameBoardMomento momento)
     {
@@ -91,6 +91,16 @@ public class GameBoard
     public void ClearMissedCoordinates()
     {
         _missedCoordinates = new();
+    }
+    private ShipCollection GetClonedShipsCollection()
+    {
+        List<Ship> clonedShips =  new List<Ship>(_battleships.getItems().Select(s => s.DeepCopy()));
+        ShipCollection clonedShipCollection = new ShipCollection();
+        foreach (var ship in clonedShips)
+        {
+            clonedShipCollection.AddItem(ship);
+        }
+        return clonedShipCollection;
     }
 
     public List<Ship> GetShips()

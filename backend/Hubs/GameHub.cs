@@ -302,6 +302,9 @@ public class GameHub : Hub
         {
             await Clients.Client(enemyPlayer.Id).SendAsync("ResetGameShip", new RestartGame { ShipType = ship.ShipType, PlacedX = ship.PlacedX, PlacedY = ship.PlacedY, Coordinates = ship.GetCoordinates() });
         }
+
+        await ShipsStats();
+        await ShipsStatsEnemy();
     }
 
     private async Task StartGame(Game _currentGame)
