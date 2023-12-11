@@ -1047,6 +1047,10 @@ namespace WpfApp1
                         executables = new Executables(executableList);
                         executables.Execute();
                         break;
+                    case TextCommand.Reset:
+                        ShipAttacksBox.Items.Clear();
+                        _connection.SendAsync("RestartGame");
+                        break;
                     default:
                         executed = false;
                         localMessageMediator.SendMessageToServer(_connection, string.Format("User tried to execute invalid command - {0}", CommandInput.Text));
