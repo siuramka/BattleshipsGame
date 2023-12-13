@@ -340,6 +340,22 @@ public class GameHub : Hub
         await shotCommand.Execute();
         await ShipsStats();
         await ShipsStatsEnemy();
+
+        bool left_ships = true;
+        foreach(var ships in currentPlayer.OwnBoard.GetShips())
+        {
+            if(ships.ShootsLeft > 0)
+            {
+                left_ships = false;
+                break;
+            }
+        }
+        if(left_ships)
+        {
+            await Clients.Client(currentPlayer.Id).SendAsync("GameOver", true);
+            await Clients.Client(enemyPlayer.Id).SendAsync("GameOver", false);
+        }
+
     }
 
     public async Task UndoMove(MakeMove move)
