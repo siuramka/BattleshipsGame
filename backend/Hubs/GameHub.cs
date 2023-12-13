@@ -294,12 +294,12 @@ public class GameHub : Hub
 
         foreach(var ship in initialPlayerShips)
         {
-            await Clients.Client(currentPlayer.Id).SendAsync("ResetGameShip", new RestartGame {  ShipType = ship.ShipType, PlacedX = ship.PlacedX, PlacedY = ship.PlacedY, Coordinates = ship.GetCoordinates()});
+            await Clients.Client(currentPlayer.Id).SendAsync("ResetGameShip", new RestartGame {  ShipType = ship.ShipType, PlacedX = ship.PlacedX, PlacedY = ship.PlacedY, Coordinates = ship.GetCoordinates(), ID = ship.ID});
         }
 
         foreach (var ship in initialEnemyPlayerShips)
         {
-            await Clients.Client(enemyPlayer.Id).SendAsync("ResetGameShip", new RestartGame { ShipType = ship.ShipType, PlacedX = ship.PlacedX, PlacedY = ship.PlacedY, Coordinates = ship.GetCoordinates() });
+            await Clients.Client(enemyPlayer.Id).SendAsync("ResetGameShip", new RestartGame { ShipType = ship.ShipType, PlacedX = ship.PlacedX, PlacedY = ship.PlacedY, Coordinates = ship.GetCoordinates(), ID = ship.ID });
         }
 
         await ShipsStats();

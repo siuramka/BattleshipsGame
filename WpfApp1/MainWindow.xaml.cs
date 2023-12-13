@@ -381,6 +381,7 @@ namespace WpfApp1
 
             EnableMyBoard(true);
             EnableEnemyBoard(turn);
+
         }
 
         private void HandleOnShipStats(List<ShipStats> shipStats)
@@ -763,7 +764,7 @@ namespace WpfApp1
         private void HandleOnSetShipRestart(RestartGame gameRestartShip)
         {
             HandleRerenderCoordinates(gameRestartShip.Coordinates);
-            HandleShipAttacks(gameRestartShip.ShipType);
+            HandleShipAttacks(gameRestartShip.ShipType, gameRestartShip.ID);
             foreach (ShipCoordinate coordinate in gameRestartShip.Coordinates)
             {
                 this.Dispatcher.Invoke(() =>
