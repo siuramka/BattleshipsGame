@@ -17,7 +17,7 @@ namespace backend.Models.Entity.Proxy
         public void GetImage()
         {
             string basePath = AppDomain.CurrentDomain.BaseDirectory;
-            string filePath = Path.Combine(basePath, String.Format(@"icons\players\{0}.png", player.Icon));
+            string filePath = Path.Combine(basePath, "icons", "players", $"{player.Icon}.png".Replace('/', Path.DirectorySeparatorChar));
             byte[] imageArray = File.ReadAllBytes(filePath);
             player.Icon = Convert.ToBase64String(imageArray);
         }
