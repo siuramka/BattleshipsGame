@@ -27,6 +27,7 @@ using System.Diagnostics;
 using System.Data;
 using WpfApp1.Interpreter;
 using WpfApp1.Mediator;
+using System.Windows.Documents;
 
 //// if you want to update UI state, you need to call your change in this
 /// as UI changes only allowed on the main thread, and this calls from the main thread. lol
@@ -237,6 +238,7 @@ namespace WpfApp1
             {
                 BombAttackBox.IsEnabled = true;
             });
+ 
             for (int y = 0; y < MAP_SIZE_Y; y++)
             {
                 for (int x = 0; x < MAP_SIZE_X; x++)
@@ -369,11 +371,18 @@ namespace WpfApp1
 
         private void HandleOnRestoreGame(bool turn)
         {
+            this.Dispatcher.Invoke(() =>
+            {
+                ResetGame.IsEnabled = false;
+                ShipAttacksBox.Items.Clear();
+            });
+
             ClearMessages();
             ClearMessageToShips();
 
             EnableMyBoard(false);
             EnableMyBoard(false);
+            
 
             EnemeyBoardStyles = new Dictionary<int, Style>();
             InitializeUi();
@@ -656,7 +665,7 @@ namespace WpfApp1
                 ResetGame.IsEnabled = true;
                 Coins_MovesLeftLabel.Content = "Moves left";
             });
-
+ 
             _connection.SendAsync("ShipsStats");
         }
 
@@ -870,7 +879,6 @@ namespace WpfApp1
 
         private void ResetGameAction(object sender, RoutedEventArgs e)
         {
-            ShipAttacksBox.Items.Clear();
             _connection.SendAsync("RestartGame");
         }
 
