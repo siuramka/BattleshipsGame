@@ -109,7 +109,7 @@ namespace backend.Command
             }
             else
             {
-                await attackerClient.SendAsync("UndoTurn", new MakeMove(x, y, ship.ShipType, isVertical, attackBomb));
+                await attackerClient.SendAsync("UndoTurn", new MakeMove(x, y, ship.ShipType, isVertical, attackBomb, ship.ID));
             }
         }
 

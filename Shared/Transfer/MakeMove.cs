@@ -14,13 +14,16 @@ namespace Shared.Transfer
         public bool IsVertical { get; set; }
         public BombType AttackBomb { get; set; }
 
-        public MakeMove(int x, int y, ShipType typeOfShip, bool isVertical, BombType attackBomb)
+        public int ID { get; set; }
+
+        public MakeMove(int x, int y, ShipType typeOfShip, bool isVertical, BombType attackBomb, int id)
         {
             X = x;
             Y = y;
             TypeOfShip = typeOfShip;
             IsVertical = isVertical;
             AttackBomb = attackBomb;
+            ID = id;
         }
     }
 }

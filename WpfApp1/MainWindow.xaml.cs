@@ -307,6 +307,23 @@ namespace WpfApp1
             _connection.On<string>("SetIcon", HandlePlayerIcon);
             _connection.On<int>("SetCoins", HandlePlayerCoins);
             _connection.On<int>("SetMoves", HandlePlayerMoves);
+            _connection.On<int, int>("SetLeftShoots", HandleLeftShoots);
+        }
+
+        private void HandleLeftShoots(int id, int leftShoots)
+        {
+            this.Dispatcher.Invoke(() => {
+                foreach (Ship ship in ShipAttacksBox.Items)
+                if(leftShoots == 0 && ship.ID == id)
+                {
+                    ShipAttacksBox.Items.Remove(ship);
+                    break;
+                }
+                if (ShipAttacksBox.SelectedItem == null && ShipAttacksBox.HasItems)
+                {
+                    ShipAttacksBox.SelectedIndex = 0;
+                }
+            });
         }
 
         private void HandlePlayerMoves(int moves)
@@ -364,6 +381,7 @@ namespace WpfApp1
 
             EnableMyBoard(true);
             EnableEnemyBoard(turn);
+
         }
 
         private void HandleOnShipStats(List<ShipStats> shipStats)
@@ -498,6 +516,8 @@ namespace WpfApp1
                 }
                 button.Style = newStyle;
             });
+            //impl
+            //_connection.SendAsync("ShipCheck", )
         }
         private void HandleOnUndoReturnMove(MoveResult moveResult)
         {
@@ -664,7 +684,7 @@ namespace WpfApp1
                 EnableEnemyBoard(false);
             });
         }
-
+        //Impl
         private void HandleShipArrangement(object sender, RoutedEventArgs e)
         {
             var b = sender as MenuItem;
@@ -677,13 +697,15 @@ namespace WpfApp1
 
             _connection.SendAsync("AddShipToPlayer", tag.x, tag.y, tag.Ship.ShipType, tag.Ship.IsVertical, tag.Ship.Price);
         }
-
-        private void HandleShipAttacks(ShipType shipType)
+        //impl
+        private void HandleShipAttacks(ShipType shipType, int id)
         {
             ShipFactory shipFactory = new ConcreteShipFactory();
             this.Dispatcher.Invoke(() =>
             {
-                ShipAttacksBox.Items.Add(shipFactory.GetShip(shipType));
+                Ship temp = shipFactory.GetShip(shipType);
+                temp.ID = id;
+                ShipAttacksBox.Items.Add(temp);
             });
             this.Dispatcher.Invoke(() =>
             {
@@ -742,7 +764,7 @@ namespace WpfApp1
         private void HandleOnSetShipRestart(RestartGame gameRestartShip)
         {
             HandleRerenderCoordinates(gameRestartShip.Coordinates);
-            HandleShipAttacks(gameRestartShip.ShipType);
+            HandleShipAttacks(gameRestartShip.ShipType, gameRestartShip.ID);
             foreach (ShipCoordinate coordinate in gameRestartShip.Coordinates)
             {
                 this.Dispatcher.Invoke(() =>
@@ -766,11 +788,12 @@ namespace WpfApp1
             }
         }
 
+        //impl
         private void HandleOnSetShipResult(SetupShipResponse setupShipResponse)
         {
             if (setupShipResponse.CanPlace)
             {
-                HandleShipAttacks(setupShipResponse.TypeOfShip);
+                HandleShipAttacks(setupShipResponse.TypeOfShip, setupShipResponse.ID);
                 foreach (ShipCoordinate coordinate in setupShipResponse.ShipCoordinates)
                 {
                     this.Dispatcher.Invoke(() =>
@@ -878,7 +901,8 @@ namespace WpfApp1
             Ship selectedAttackShip = (Ship)ShipAttacksBox.SelectedItem;
             BombType selectedBomb = (BombType)BombAttackBox.SelectedItem;
 
-            _connection.SendAsync("MakeMove", new MakeMove(x, y, selectedAttackShip.ShipType, selectedAttackShip.IsVertical, selectedBomb));
+            //impl
+            _connection.SendAsync("MakeMove", new MakeMove(x, y, selectedAttackShip.ShipType, selectedAttackShip.IsVertical, selectedBomb, selectedAttackShip.ID));
             _connection.SendAsync("ShipsStats");
             EnableEnemyBoard(false);
             UpdateState(currentGameState.getNextState());

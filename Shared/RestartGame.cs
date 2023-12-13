@@ -14,5 +14,7 @@ namespace Shared
         public int PlacedX { get; set; } 
         public int PlacedY { get; set;}
         public List<ShipCoordinate> Coordinates { get; set; }
+
+        public int ID { get; set; }
     }
 }

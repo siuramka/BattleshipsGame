@@ -8,10 +8,13 @@ namespace Shared.Transfer
         public List<ShipCoordinate> ShipCoordinates { get; private set; }
         public ShipType TypeOfShip { get; set; }
 
-        public SetupShipResponse(bool canPlace, List<ShipCoordinate> shipCoordinates, ShipType typeOfShip)
+        public int ID { get; set; }
+
+        public SetupShipResponse(bool canPlace, List<ShipCoordinate> shipCoordinates, ShipType typeOfShip, int id)
         {
             CanPlace = canPlace;
             TypeOfShip = typeOfShip;
+            ID = id;
             ShipCoordinates = new List<ShipCoordinate>();
             foreach(ShipCoordinate coord in shipCoordinates)
             {
