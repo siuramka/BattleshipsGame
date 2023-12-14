@@ -96,6 +96,6 @@ Komandos nariai:
    - Riboti laivų padėjimą pagal nustatytą maksimalų skaičių, kad išvengtume žaidimo disbalanso.
   
 ## Docker paleidimas
-docker build -t ships .
-docker run -p 8080:80 -t ships 
+- docker build -t ships .
+- docker run -p 8080:80 -t ships 
 Pasikeisti IP WPF Windows
