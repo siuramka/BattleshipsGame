@@ -64,7 +64,7 @@ Komandos nariai:
    - Žaidėjas gali pasirinkti ar laivelis pakelia vėliavėlę ir kokios jis bus spalvos.
    - Žaidėjas gali per tam tikrą laiką atlikti šūvį pakartotinai, jeigu jis nepataikė į priešininko laivą.
    - Žaidėjas gali perkrauti žaidimą iš naujo.
-   - Žaidėjas turi 10 ėjimų per kuriuos turi numušti visus priešininko laivus, laimi žaidėjas kuriam greičiausiai baigiasi ėjimai.
+   - Žaidėjas turi 20 ėjimų per kuriuos turi numušti visus priešininko laivus, jeigu žaidėjui baigiasi ėjimai jis pralaimi.
    - Kiekvienas laivas turi ribotą šūvių kiekį, jeigu laivas nebeturi šūvių, jisai dingsta iš sąrašo, o jei visi laivai nebeturi šūvių baigiamas žaidimas.
    - Atakos damage skaičiuojamas taip:
      - Temos tipas
