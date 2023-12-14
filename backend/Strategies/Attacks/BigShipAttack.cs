@@ -70,5 +70,6 @@ namespace backend.Strategies.Attacks
 
             HealthDamage = h1.GetDamage(gameBoard, HealthDamage);
         }
+
     }
 }

@@ -27,8 +27,8 @@ namespace backend.Strategies.Attacks
 
         public override void SetupWeapons()
         {
-            bombFactory = new BigBombFactory();
-            attackStrategy = new BigBombAttackStrategy();
+            bombFactory = new SmallBombFactory();
+            attackStrategy = new SmallBombAttackStrategy();
 
             var h1 = new AttackDamageHandler();
             var h3 = new ShipDamageAttackHandler();
